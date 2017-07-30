@@ -1,5 +1,7 @@
 package models
 
+import "ChineseChess/server/utils"
+
 // 棋子
 const (
 	PieceShuai  = iota // 帅
@@ -34,7 +36,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 			if (x1 == x2) != (y1 == y2) {
 
 				// 只能移动1单元距离
-				if (x1-x2 == 1) || (x1-x2 == -1) || (y1-y2 == 1) || (y1-y2 == -1) {
+				if utils.SquaredEucDist(x1, y1, x2, y2) == 1 {
 
 					return true
 				}
@@ -55,7 +57,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 			if (x1 == x2) != (y1 == y2) {
 
 				// 只能移动1单元距离
-				if (x1-x2 == 1) || (x1-x2 == -1) || (y1-y2 == 1) || (y1-y2 == -1) {
+				if utils.SquaredEucDist(x1, y1, x2, y2) == 1 {
 
 					return true
 				}
@@ -73,7 +75,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		if (((x1 == 3 || x1 == 5) && (y1 == 0 || y1 == 2)) || (x1 == 4 && y1 == 1)) && (((x2 == 3 || x2 == 5) && (y2 == 0 || y2 == 2)) || (x2 == 4 && y2 == 1)) {
 
 			// 只能对角线方向移动一步
-			if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 2 {
+			if utils.SquaredEucDist(x1, y1, x2, y2) == 2 {
 
 				return true
 			}
@@ -90,7 +92,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		if (((x1 == 3 || x1 == 5) && (y1 == 7 || y1 == 9)) || (x1 == 4 && y1 == 8)) && (((x2 == 3 || x2 == 5) && (y2 == 7 || y2 == 9)) || (x2 == 4 && y2 == 8)) {
 
 			// 只能对角线方向移动1步
-			if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 2 {
+			if utils.SquaredEucDist(x1, y1, x2, y2) == 2 {
 
 				return true
 			}
@@ -107,7 +109,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		if ((y1 == 2 && x1%4 == 0) || ((y1 == 0 || y1 == 4) && x1%4 == 2)) && ((y2 == 2 && x2%4 == 0) || ((y2 == 0 || y2 == 4) && x2%4 == 2)) {
 
 			// 只能对角线方向移动2步
-			if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 8 {
+			if utils.SquaredEucDist(x1, y1, x2, y2) == 8 {
 
 				// 中间不能被棋子挡住
 				if board.Get((x1+x2)/2, (y1+y2)/2) == -1 {
@@ -128,7 +130,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		if ((y1 == 7 && x1%4 == 0) || ((y1 == 9 || y1 == 5) && x1%4 == 2)) && ((y2 == 7 && x2%4 == 0) || ((y2 == 9 || y2 == 5) && x2%4 == 2)) {
 
 			// 只能对角线方向移动2步
-			if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 8 {
+			if utils.SquaredEucDist(x1, y1, x2, y2) == 8 {
 
 				// 中间不能被棋子挡住
 				if board.Get((x1+x2)/2, (y1+y2)/2) == -1 {
@@ -147,7 +149,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 
 		// 活动范围不受限制
 		// 马走'日'
-		if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 5 {
+		if utils.SquaredEucDist(x1, y1, x2, y2) == 5 {
 
 			// 中间不能被棋子挡住
 			if (x1-x2 == -2 && board.Get(x1+1, y1) == -1) || (x1-x2 == 2 && board.Get(x1-1, y1) == -1) || (y1-y2 == -2 && board.Get(x1, y1+1) == -1) || (y1-y2 == 2 && board.Get(x1, y1-1) == -1) {
@@ -165,7 +167,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 
 		// 活动范围不受限制
 		// 马走'日'
-		if (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2) == 5 {
+		if utils.SquaredEucDist(x1, y1, x2, y2) == 5 {
 
 			// 中间不能被棋子挡住
 			if (x1-x2 == -2 && board.Get(x1+1, y1) == -1) || (x1-x2 == 2 && board.Get(x1-1, y1) == -1) || (y1-y2 == -2 && board.Get(x1, y1+1) == -1) || (y1-y2 == 2 && board.Get(x1, y1-1) == -1) {

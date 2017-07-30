@@ -11,10 +11,23 @@ const (
 棋盘
 */
 type ChessBoard struct {
+	ID          string  // 棋局唯一ID
+	Steps       []Step  // 走子历史
+	RedUserID   string  // 红方用户ID
+	BlackUserID string  // 黑方用户ID
+	WinnerID    *string // 获胜方用户ID(如果是和局则该局无值)
+
 	board [ChessBoardMaxX + 1][ChessBoardMaxY + 1]int32 // 棋盘
 }
 
-// 获取指定坐标上的信息
+/*
+走子记录
+*/
+type Step [4]int32 // [x1, y1, x2, y2]
+
+/*
+获取指定坐标上的信息
+*/
 func (this *ChessBoard) Get(x, y int32) int32 {
 	if validLocation(x, y) {
 		return this.board[x][y]
@@ -22,7 +35,9 @@ func (this *ChessBoard) Get(x, y int32) int32 {
 	return nil
 }
 
-// 走
+/*
+走子
+*/
 func (this *ChessBoard) Go(x1, y1, x2, y2 int32) error {
 
 	if validLocation(x1, y1) && validLocation(x2, y2) {
@@ -32,6 +47,8 @@ func (this *ChessBoard) Go(x1, y1, x2, y2 int32) error {
 
 			// 执行
 			this.board[x1][y1], this.board[x2][y2] = -1, this.board[x1][y1]
+			// 记录
+			this.Steps = append(this.Steps, Step{x1, y1, x2, y2})
 			return nil
 		}
 		return errors.New("不符合游戏规则")
@@ -46,8 +63,10 @@ func validLocation(x, y int32) bool {
 	return (x <= ChessBoardMaxX) && (x >= 0) && (y <= ChessBoardMaxX) && (y >= 0)
 }
 
-// 开启新的棋局
-func NewChessBoard() *ChessBoard {
+/*
+ 开启新的棋局
+*/
+func NewChessBoard(redUserID, blackUserID string) *ChessBoard {
 
 	chessBoard := new(ChessBoard)
 
@@ -70,6 +89,10 @@ func NewChessBoard() *ChessBoard {
 	board[0][6], board[2][6], board[4][6], board[6][6], board[8][6] = PieceZu, PieceZu, PieceZu, PieceZu, PieceZu
 
 	chessBoard.board = board
+	chessBoard.Steps = []Step{}
+	chessBoard.RedUserID = redUserID
+	chessBoard.BlackUserID = blackUserID
+	// TODO 初始化棋局ID
 
 	return chessBoard
 }
