@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"net"
 	"os"
 )
@@ -35,8 +36,18 @@ func (this *tcpServer) start() error {
 	go func() {
 		for {
 			select {
-			case <-wch:
-				// TODO 解析数据, 向指定uid推送数据
+			case data := <-wch:
+
+				// 解析数据, 向指定uid推送数据
+				req := new(Req)
+				if err := proto.NewBuffer(data).DecodeMessage(req); err != nil {
+					fmt.Printf("数据解析错误(详细信息: %v)\n", err)
+					return
+				}
+				if _, err := this.conns[req.Uid].Write(data); err != nil {
+					fmt.Printf("推送数据到%s出错(详细信息: %v)\n", req.Uid, err)
+					return
+				}
 			}
 		}
 	}()
@@ -84,3 +95,5 @@ func ServeTCP(port int, routers map[string]func([]byte) []byte) {
 	server := &tcpServer{"0.0.0.0", port, make(map[string]*net.TCPConn), routers}
 	server.start()
 }
+
+// TODO handle rch and dispatch requests
