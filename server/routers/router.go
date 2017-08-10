@@ -21,21 +21,7 @@ func Router() map[string]func([]byte) []byte {
 	r := &router{routers: make(map[string]func([]byte) []byte)}
 
 	// config routers
-	r.config(
-
-		// helloworld demo
-		handler{"hello_world", helloworld},
-		handler{"hello_world2", helloworld2},
-	)
+	r.config(routerConf...)
 
 	return r.routers
-
-}
-
-func helloworld(param []byte) []byte {
-	return []byte{'f', 'o', 'f', 'f'}
-}
-
-func helloworld2(param []byte) []byte {
-	return []byte{'f', 'o', 'f', 'f', '2'}
 }

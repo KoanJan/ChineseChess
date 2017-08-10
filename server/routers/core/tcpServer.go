@@ -2,9 +2,10 @@ package core
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"net"
 	"os"
+
+	"github.com/golang/protobuf/proto"
 )
 
 //var ech chan error = make(chan error, 10)    // error
@@ -93,7 +94,26 @@ func (this *tcpServer) start() error {
 */
 func ServeTCP(port int, routers map[string]func([]byte) []byte) {
 	server := &tcpServer{"0.0.0.0", port, make(map[string]*net.TCPConn), routers}
+	server.dispatch()
 	server.start()
 }
 
-// TODO handle rch and dispatch requests
+// handle rch and dispatch requests
+func (this *tcpServer) dispatch() {
+	go func() {
+		for {
+			req := new(Req)
+			if err := proto.NewBuffer(<-rch).DecodeMessage(req); err != nil {
+				fmt.Println("请求不合法")
+				continue
+			}
+			// 处理完数据返回
+			go func(rq *Req) {
+				resp := &Req{rq.Uid, rq.Method, this.cbs[rq.Method](rq.Body)}
+				if data, err := proto.Marshal(resp); err == nil {
+					wch <- data
+				}
+			}(req)
+		}
+	}()
+}
