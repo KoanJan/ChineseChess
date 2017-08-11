@@ -1,6 +1,10 @@
 package models
 
-import "errors"
+import (
+	"errors"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 const (
 	ChessBoardMaxX = 8
@@ -11,13 +15,17 @@ const (
 棋盘
 */
 type ChessBoard struct {
-	ID          string  // 棋局唯一ID
-	Steps       []Step  // 走子历史
-	RedUserID   string  // 红方用户ID
-	BlackUserID string  // 黑方用户ID
-	WinnerID    *string // 获胜方用户ID(如果是和局则该局无值)
+	common
+	Steps       []Step        `bson: "steps", json: "steps"`                 // 走子历史
+	RedUserID   bson.ObjectId `bson: "red_user_id", json: "red_user_id"`     // 红方用户ID
+	BlackUserID bson.ObjectId `bson: "black_user_id", json: "black_user_id"` // 黑方用户ID
+	WinnerID    bson.ObjectId `bson: "winner_id", json: "winner_id"`         // 获胜方用户ID(如果是和局则该局无值)
 
 	board [ChessBoardMaxX + 1][ChessBoardMaxY + 1]int32 // 棋盘
+}
+
+func (this *ChessBoard) CollectionName() string {
+	return "chess_board"
 }
 
 /*
@@ -32,7 +40,7 @@ func (this *ChessBoard) Get(x, y int32) int32 {
 	if validLocation(x, y) {
 		return this.board[x][y]
 	}
-	return nil
+	return -1
 }
 
 /*
@@ -90,8 +98,8 @@ func NewChessBoard(redUserID, blackUserID string) *ChessBoard {
 
 	chessBoard.board = board
 	chessBoard.Steps = []Step{}
-	chessBoard.RedUserID = redUserID
-	chessBoard.BlackUserID = blackUserID
+	chessBoard.RedUserID = bson.ObjectIdHex(redUserID)
+	chessBoard.BlackUserID = bson.ObjectIdHex(blackUserID)
 	// TODO 初始化棋局ID
 
 	return chessBoard
