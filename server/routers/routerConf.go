@@ -8,6 +8,7 @@ var routerConf = []handler{
 	{"hello", hello},
 
 	{"CreateChessBoard", v1.CreateChessBoard}, // 创建棋局
+	{"CreateStep", v1.CreateStep},             // 下棋
 }
 
 //hello
