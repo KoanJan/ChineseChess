@@ -8,12 +8,12 @@ import (
 )
 
 type common struct {
-	ID bson.ObjectId `bson: "_id", json: "id,string"`
+	ID bson.ObjectId `bson:"_id",json:"id,string"`
 }
 
 // 集合名称
 func (this *common) CollectionName() string {
-	return ""
+	panic("model 'common' cannot be instantiated")
 }
 
 // 插入

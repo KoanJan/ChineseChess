@@ -16,10 +16,10 @@ const (
 */
 type ChessBoard struct {
 	common
-	Steps       []Step        `bson: "steps", json: "steps"`                 // 走子历史
-	RedUserID   bson.ObjectId `bson: "red_user_id", json: "red_user_id"`     // 红方用户ID
-	BlackUserID bson.ObjectId `bson: "black_user_id", json: "black_user_id"` // 黑方用户ID
-	WinnerID    bson.ObjectId `bson: "winner_id", json: "winner_id"`         // 获胜方用户ID(如果是和局则该局无值)
+	Steps       []Step        `bson:"steps",json:"steps"`                 // 走子历史
+	RedUserID   bson.ObjectId `bson:"red_user_id",json:"red_user_id"`     // 红方用户ID
+	BlackUserID bson.ObjectId `bson:"black_user_id",json:"black_user_id"` // 黑方用户ID
+	WinnerID    bson.ObjectId `bson:"winner_id",json:"winner_id"`         // 获胜方用户ID(如果是和局则该局无值)
 
 	board [ChessBoardMaxX + 1][ChessBoardMaxY + 1]int32 // 棋盘
 }

@@ -4,9 +4,10 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"ChineseChess/server/conf"
+	_ "ChineseChess/server/conf"
 )
 
-var uri string = conf.AppConf.Mongo.Host + conf.AppConf.Mongo.Port
+var uri string = conf.AppConf.Mongo.Host + ":" + conf.AppConf.Mongo.Port
 
 // 连接
 type conn struct {
