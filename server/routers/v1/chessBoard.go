@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 
+	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
 	. "ChineseChess/server/routers/common"
 )
@@ -22,7 +23,7 @@ func CreateChessBoard(data []byte) []byte {
 
 	// 增加棋局
 	board := models.NewChessBoard(form.RedUserID, form.BlackUserID)
-	if err := board.Save(); err != nil {
+	if err := daf.Insert(board); err != nil {
 		return RespErr(err)
 	}
 	return RespOK()

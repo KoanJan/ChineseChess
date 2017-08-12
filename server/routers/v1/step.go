@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"ChineseChess/server/cache"
+	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
 	. "ChineseChess/server/routers/common"
 )
@@ -31,7 +32,7 @@ func CreateStep(data []byte) []byte {
 		}
 
 		// 更新数据
-		if err := board.Update(); err != nil {
+		if err := daf.Update(board); err != nil {
 			return err
 		}
 
