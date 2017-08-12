@@ -22,6 +22,7 @@ type ChessBoard struct {
 	WinnerID    bson.ObjectId `bson:"winner_id",json:"winner_id"`         // 获胜方用户ID(如果是和局则该局无值)
 
 	board [ChessBoardMaxX + 1][ChessBoardMaxY + 1]int32 // 棋盘
+
 }
 
 func (this *ChessBoard) CollectionName() string {
@@ -46,8 +47,9 @@ func (this *ChessBoard) Get(x, y int32) int32 {
 /*
 走子
 */
-func (this *ChessBoard) Go(x1, y1, x2, y2 int32) error {
+func (this *ChessBoard) Go(step Step) error {
 
+	x1, y1, x2, y2 := step[0], step[1], step[2], step[3]
 	if validLocation(x1, y1) && validLocation(x2, y2) {
 
 		// 验证是否符合规则
@@ -96,11 +98,11 @@ func NewChessBoard(redUserID, blackUserID string) *ChessBoard {
 	board[1][7], board[7][7] = PiecePaoB, PiecePaoB
 	board[0][6], board[2][6], board[4][6], board[6][6], board[8][6] = PieceZu, PieceZu, PieceZu, PieceZu, PieceZu
 
+	chessBoard.ID = bson.NewObjectId()
 	chessBoard.board = board
 	chessBoard.Steps = []Step{}
 	chessBoard.RedUserID = bson.ObjectIdHex(redUserID)
 	chessBoard.BlackUserID = bson.ObjectIdHex(blackUserID)
-	// TODO 初始化棋局ID
 
 	return chessBoard
 }

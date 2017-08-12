@@ -31,3 +31,11 @@ func (this *common) Update() (err error) {
 	})
 	return
 }
+
+// 根据ID加载数据
+func (this *common) LoadWithID() (err error) {
+	db.Do(this.CollectionName(), func(c *mgo.Collection) {
+		err = c.FindId(this.ID).One(this)
+	})
+	return
+}
