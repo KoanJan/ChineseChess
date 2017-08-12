@@ -4,7 +4,7 @@ package models
 用户
 */
 type User struct {
-	common
+	Common
 	Username string `bson:"username",json:"username"` // 登录名
 	Nick     string `bson:"nick",json:"nick"`         // 昵称
 }

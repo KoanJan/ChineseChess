@@ -6,6 +6,7 @@ import (
 	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
 	. "ChineseChess/server/routers/common"
+	"fmt"
 )
 
 type chessBoardForm struct {
@@ -20,6 +21,7 @@ func CreateChessBoard(data []byte) []byte {
 	if err := json.Unmarshal(data, form); err != nil {
 		return RespErr(err)
 	}
+	fmt.Println(form)
 
 	// 增加棋局
 	board := models.NewChessBoard(form.RedUserID, form.BlackUserID)

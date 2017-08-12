@@ -10,10 +10,10 @@ const (
 
 // 请求返回数据结构
 type Resp struct {
-	Status int         `json: "status"` // 状态
-	Data   interface{} `json: "data"`   // 数据
-	Msg    string      `json: "msg"`    // 提示信息
-	Error  error       `json: "error"`  // 错误信息
+	Status int         `json:"status"` // 状态
+	Data   interface{} `json:"data"`   // 数据
+	Msg    string      `json:"msg"`    // 提示信息
+	Error  string      `json:"error,"` // 错误信息
 }
 
 // 成功
@@ -38,13 +38,17 @@ func RespErr(err error) []byte {
 
 func resp(data interface{}, msg string, err error) []byte {
 
-	var status int
+	var (
+		status int
+		errMsg string
+	)
 	if err != nil {
 		status = RespStatusError
+		errMsg = err.Error()
 	} else {
 		status = RespStatusOK
 	}
-	resp := &Resp{status, data, msg, err}
+	resp := &Resp{status, data, msg, errMsg}
 	b, _ := json.Marshal(resp)
 	return b
 }
