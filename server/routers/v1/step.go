@@ -3,8 +3,7 @@ package v1
 import (
 	"encoding/json"
 
-	"ChineseChess/server/cache"
-	"ChineseChess/server/daf"
+	"ChineseChess/server/logic"
 	"ChineseChess/server/models"
 	. "ChineseChess/server/routers/common"
 )
@@ -24,24 +23,10 @@ func CreateStep(data []byte) []byte {
 		return RespErr(err)
 	}
 
-	if err := cache.UpdateBoardCache(form.ChessBoardID, func(board *models.ChessBoard) error {
-
-		// 走子
-		if err := board.Go(form.Step); err != nil {
-			return err
-		}
-
-		// 更新数据
-		if err := daf.Update(board); err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
+	// 执行
+	if err := logic.Play(form.Step[0], form.Step[1], form.Step[2], form.Step[3], form.ChessBoardID, form.UserID); err != nil {
 		return RespErr(err)
 	}
-
-	// TODO 判断输赢
 
 	return RespOK()
 }

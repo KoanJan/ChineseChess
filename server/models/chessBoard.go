@@ -2,14 +2,33 @@ package models
 
 import (
 	"errors"
-
 	"fmt"
+
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
 	ChessBoardMaxX = 8
 	ChessBoardMaxY = 9
+)
+
+// 棋子
+const (
+	PieceNo     = -1   // 没有棋子占位
+	PieceShuai  = iota // 帅
+	PieceJiang         // 将
+	PieceShiR          // 士(红)
+	PieceShiB          // 士(黑)
+	PieceXiangR        // 相
+	PieceXiangB        // 象
+	PieceMaR           // 马(红)
+	PieceMaB           // 马(黑)
+	PieceJuR           // 车(红)
+	PieceJuB           // 车(黑)
+	PiecePaoR          // 炮(红)
+	PiecePaoB          // 炮(黑)
+	PieceBing          // 兵
+	PieceZu            // 卒
 )
 
 /*
@@ -46,26 +65,14 @@ func (this *ChessBoard) Get(x, y int32) int32 {
 }
 
 /*
-走子
+设定指定坐标上的值
 */
-func (this *ChessBoard) Go(step Step) error {
-
-	x1, y1, x2, y2 := step[0], step[1], step[2], step[3]
-	if validLocation(x1, y1) && validLocation(x2, y2) {
-
-		// 验证是否符合规则
-		if AllowedUnderRules(x1, y1, x2, y2, this) {
-
-			// 执行
-			this.board[x1][y1], this.board[x2][y2] = -1, this.board[x1][y1]
-			// 记录
-			this.Steps = append(this.Steps, Step{x1, y1, x2, y2})
-			return nil
-		}
-		return errors.New("不符合游戏规则")
+func (this *ChessBoard) Set(x, y, v int32) error {
+	if validLocation(x, y) {
+		this.board[x][y] = v
+		return nil
 	}
 	return errors.New("坐标不合法")
-
 }
 
 // 检验坐标是否合法

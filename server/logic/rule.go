@@ -1,29 +1,14 @@
-package models
+package logic
 
-import "ChineseChess/server/utils"
-
-// 棋子
-const (
-	PieceShuai  = iota // 帅
-	PieceJiang         // 将
-	PieceShiR          // 士(红)
-	PieceShiB          // 士(黑)
-	PieceXiangR        // 相
-	PieceXiangB        // 象
-	PieceMaR           // 马(红)
-	PieceMaB           // 马(黑)
-	PieceJuR           // 车(红)
-	PieceJuB           // 车(黑)
-	PiecePaoR          // 炮(红)
-	PiecePaoB          // 炮(黑)
-	PieceBing          // 兵
-	PieceZu            // 卒
+import (
+	"ChineseChess/server/models"
+	"ChineseChess/server/utils"
 )
 
 // 棋子走法规则验证
-var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int32]func(int32, int32, int32, int32, *ChessBoard) bool{
+var rules map[int32]func(int32, int32, int32, int32, *models.ChessBoard) bool = map[int32]func(int32, int32, int32, int32, *models.ChessBoard) bool{
 
-	PieceShuai: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceShuai: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -44,7 +29,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceJiang: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceJiang: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -65,7 +50,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceShiR: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceShiR: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -82,7 +67,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceShiB: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceShiB: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -99,7 +84,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceXiangR: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceXiangR: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -120,7 +105,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceXiangB: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceXiangB: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -141,7 +126,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceMaR: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceMaR: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -159,7 +144,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceMaB: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceMaB: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -177,7 +162,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceJuR: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceJuR: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -223,7 +208,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceJuB: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceJuB: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -269,7 +254,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PiecePaoR: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PiecePaoR: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -363,7 +348,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PiecePaoB: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PiecePaoB: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -457,7 +442,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceBing: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceBing: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -475,7 +460,7 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 		}
 		return false
 	},
-	PieceZu: func(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+	models.PieceZu: func(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
 		if isBlockedBySameColor(x1, y1, x2, y2, board) {
 			return false
@@ -496,17 +481,39 @@ var rules map[int32]func(int32, int32, int32, int32, *ChessBoard) bool = map[int
 }
 
 // 检查目标坐标是否被己方棋子占据
-func isBlockedBySameColor(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+func isBlockedBySameColor(x1, y1, x2, y2 int32, board *models.ChessBoard) bool {
 
-	from := board.Get(x1, y1)
 	to := board.Get(x2, y2)
-	return to == -1 || (to%2 != from%2)
+	return to == -1 || (to%2 != board.Get(x1, y1)%2)
 }
 
 /*
 验证是否被游戏规则允许
 */
-func AllowedUnderRules(x1, y1, x2, y2 int32, board *ChessBoard) bool {
+func AllowedUnderRules(x1, y1, x2, y2 int32, board *models.ChessBoard, userID string) bool {
 
-	return rules[board.Get(x1, y1)](x1, y1, x2, y2, board)
+	piece := board.Get(x1, y1)
+	colorIsRed := piece%2 == 0
+	onRedTurn := len(board.Steps)%2 == 0
+
+	// 不可以移动非己方的棋子
+	if userID == board.RedUserID.Hex() {
+		// 如果是红方
+		if !colorIsRed || !onRedTurn {
+			// 不可移动黑子, 检验是否轮到红方下子
+			return false
+		}
+	} else if userID == board.BlackUserID.Hex() {
+		// 如果是黑方
+		if colorIsRed || onRedTurn {
+			// 不可移动红子, 检验是否轮到黑方下子
+			return false
+		}
+	} else {
+		// 观棋不语
+		return false
+	}
+
+	// 走法是否合法
+	return rules[piece](x1, y1, x2, y2, board)
 }
