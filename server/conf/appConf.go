@@ -26,7 +26,7 @@ var AppConf *appConf = new(appConf)
 // 初始化配置
 func init() {
 
-	data, err := ioutil.ReadFile("/Users/koan/Documents/Workspace/Go/src/ChineseChess/server/conf/appConf.yml")
+	data, err := ioutil.ReadFile("server/conf/appConf.yml")
 	if err != nil {
 		fmt.Println(err)
 		panic("读取配置文件信息出错!")
