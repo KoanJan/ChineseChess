@@ -12,5 +12,7 @@ func main() {
 
 	routers.RouteV1(app)
 
-	app.Run(iris.Addr(":6666"))
+	if err := app.Run(iris.Addr(":6666")); err != nil {
+		panic(err)
+	}
 }

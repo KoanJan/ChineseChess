@@ -10,4 +10,7 @@ func RouteV1(app *iris.Application) {
 
 	app.Get("/api/v1/hello", v1.Hello)
 
+	// user
+	app.Post("/api/v1/user", v1.CreateUser)
+
 }
