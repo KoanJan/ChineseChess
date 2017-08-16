@@ -10,6 +10,7 @@ import (
 // 应用配置
 type appConf struct {
 	Mongo *mongoConf `yaml:"mongoConf"`
+	Redis *redisConf `yaml:"redisConf"`
 }
 
 // mongo配置
@@ -19,6 +20,11 @@ type mongoConf struct {
 	DBName   string `yaml:"dbName"`   // 数据库
 	Username string `yaml:"username"` // 用户名
 	Password string `yaml:"password"` // 密码
+}
+
+// redis配置
+type redisConf struct {
+	Address string `yaml:"address"` // 地址
 }
 
 var AppConf *appConf = new(appConf)

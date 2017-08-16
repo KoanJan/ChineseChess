@@ -12,7 +12,7 @@ func main() {
 
 	routers.RouteV1(app)
 
-	if err := app.Run(iris.Addr(":6666")); err != nil {
+	if err := app.Run(iris.Addr(":6666"), iris.WithCharset("UTF-8")); err != nil {
 		panic(err)
 	}
 }

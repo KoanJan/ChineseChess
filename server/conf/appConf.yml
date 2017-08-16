@@ -4,3 +4,5 @@ mongoConf:
   username: ~
   password: ~
   dbName: chinese_chess
+redisConf:
+  address: 127.0.0.1:6379
