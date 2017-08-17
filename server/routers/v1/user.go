@@ -19,7 +19,7 @@ func CreateUser(c *gin.Context) {
 
 	form := new(userForm)
 	if err := c.BindJSON(form); err != nil {
-		c.AbortWithError(400, err)
+		RenderErr(c, err, 400)
 		return
 	}
 	user := models.NewUser()

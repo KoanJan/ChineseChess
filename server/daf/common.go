@@ -5,9 +5,10 @@ import (
 
 	"ChineseChess/server/db"
 	"ChineseChess/server/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
-// 插入
+// Insert can insert a model into db
 func Insert(model models.Model) (err error) {
 	db.Do(model.CollectionName(), func(c *mgo.Collection) {
 		err = c.Insert(model)
@@ -15,7 +16,7 @@ func Insert(model models.Model) (err error) {
 	return
 }
 
-// 更新
+// Update can update a model
 func Update(model models.Model) (err error) {
 	db.Do(model.CollectionName(), func(c *mgo.Collection) {
 		err = c.UpdateId(model.GetID(), model)
@@ -23,7 +24,7 @@ func Update(model models.Model) (err error) {
 	return
 }
 
-// 删除
+// Delete can delete a model
 func Delete(model models.Model) (err error) {
 	db.Do(model.CollectionName(), func(c *mgo.Collection) {
 		err = c.RemoveId(model.GetID())
@@ -31,10 +32,11 @@ func Delete(model models.Model) (err error) {
 	return
 }
 
-// 根据ID查找
-func Find(model models.Model) (err error) {
+// Find can find a model.
+// If the condition m with type bson.M is not nil, it will find by the m at first, and else find by the ID of model
+func FindOne(model models.Model, m ...bson.M) (err error) {
 	db.Do(model.CollectionName(), func(c *mgo.Collection) {
-		err = c.FindId(model.GetID()).One(model)
+		err = c.Find(m).One(model)
 	})
 	return
 }
