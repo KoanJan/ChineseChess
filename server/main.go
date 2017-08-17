@@ -4,11 +4,14 @@ import (
 	"github.com/kataras/iris"
 
 	"ChineseChess/server/routers"
+	"ChineseChess/server/routers/middlewares"
 )
 
 func main() {
 
 	app := iris.New()
+
+	app.Use(middlewares.Handlers...)
 
 	routers.RouteV1(app)
 
