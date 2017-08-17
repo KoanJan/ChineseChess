@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kataras/iris/context"
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -35,15 +35,16 @@ func keyFunc(token *jwt.Token) (interface{}, error) {
 func ValidateToken(tokenString string) error {
 
 	token, err := jwt.Parse(tokenString, keyFunc)
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return nil
-	} else {
-		return err
+	if err == nil {
+		if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			return nil
+		}
 	}
+	return err
 }
 
 // GetUserID returns userID without any validation, so it's dangerous if you use it with no validation
-func GetUserID(ctx context.Context) string {
-	token, _ := jwt.Parse(ctx.GetHeader(JwtTokenHttpHeaderName), keyFunc)
+func GetUserID(c *gin.Context) string {
+	token, _ := jwt.Parse(c.GetHeader(JwtTokenHttpHeaderName), keyFunc)
 	return token.Claims.(jwt.MapClaims)[JwtUserIDKey].(string)
 }

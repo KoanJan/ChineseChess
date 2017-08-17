@@ -1,16 +1,25 @@
 package routers
 
 import (
-	"github.com/kataras/iris"
+	"github.com/gin-gonic/gin"
 
+	"ChineseChess/server/routers/middlewares"
 	"ChineseChess/server/routers/v1"
 )
 
-func RouteV1(app *iris.Application) {
+func routeV1(e *gin.Engine) {
 
-	app.Get("/api/v1/hello", v1.Hello)
+	// v1接口组
+	group := e.Group("/api/v1")
+
+	// 中间件
+	group.Use(middlewares.Handlers...)
+
+	// 路由表
+
+	group.GET("/hello", v1.Hello)
 
 	// user
-	app.Post("/api/v1/user", v1.CreateUser)
+	group.POST("/user", v1.CreateUser)
 
 }

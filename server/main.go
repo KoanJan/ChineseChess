@@ -1,21 +1,16 @@
 package main
 
 import (
-	"github.com/kataras/iris"
+	"github.com/gin-gonic/gin"
 
 	"ChineseChess/server/routers"
-	"ChineseChess/server/routers/middlewares"
 )
 
 func main() {
 
-	app := iris.New()
+	engine := gin.Default()
 
-	app.Use(middlewares.Handlers...)
+	routers.Route(engine)
 
-	routers.RouteV1(app)
-
-	if err := app.Run(iris.Addr(":6666"), iris.WithCharset("UTF-8")); err != nil {
-		panic(err)
-	}
+	engine.Run(":9088")
 }

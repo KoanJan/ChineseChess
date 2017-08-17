@@ -1,10 +1,11 @@
 package v1
 
 import (
-	"github.com/kataras/iris/context"
+	"github.com/gin-gonic/gin"
 
 	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
+	. "ChineseChess/server/routers/render"
 )
 
 type userForm struct {
@@ -14,11 +15,11 @@ type userForm struct {
 }
 
 // CreateUser creates a user
-func CreateUser(ctx context.Context) {
+func CreateUser(c *gin.Context) {
 
 	form := new(userForm)
-	if err := ctx.ReadJSON(form); err != nil {
-		ctx.WriteString(err.Error())
+	if err := c.BindJSON(form); err != nil {
+		c.AbortWithError(400, err)
 		return
 	}
 	user := models.NewUser()
@@ -26,6 +27,8 @@ func CreateUser(ctx context.Context) {
 	user.Nick = form.Nick
 	user.Password = form.Password
 	if err := daf.Insert(user); err != nil {
-		ctx.WriteString(err.Error())
+		RenderErr(c, err)
+		return
 	}
+	RenderOk(c)
 }

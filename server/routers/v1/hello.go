@@ -1,9 +1,11 @@
 package v1
 
-import "github.com/kataras/iris/context"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-// Hello echoes "hello, iris!"
-func Hello(ctx context.Context) {
+// Hello echoes "hello, gin!"
+func Hello(c *gin.Context) {
 
-	ctx.WriteString("hello, iris!")
+	c.String(200, "hello, gin!")
 }
