@@ -41,7 +41,9 @@ func Login(c *gin.Context) {
 	}
 	token, err := middlewares.GenerateToken(user.ID.Hex())
 	if err != nil {
+		c.Error(err)
 		RenderErr(c, errors.New("登陆失败"))
+		return
 	}
 	c.Header(middlewares.JwtTokenHttpHeaderName, token)
 	//
@@ -53,7 +55,6 @@ func Login(c *gin.Context) {
 // Logout function will be called while user logout
 func Logout(c *gin.Context) {
 
-	userID := middlewares.GetUserID(c)
-	redis.Del(userID)
+	redis.Del(c.GetString(middlewares.CurrentUserIDKey))
 	RenderOk(c)
 }

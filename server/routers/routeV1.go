@@ -13,7 +13,7 @@ func routeV1(e *gin.Engine) {
 	group := e.Group("/api/v1")
 
 	// 中间件
-	group.Use(middlewares.Handlers...)
+	group.Use(middlewares.Handlers[0])
 
 	// 路由表
 	group.GET("/hello", v1.Hello)
@@ -21,6 +21,6 @@ func routeV1(e *gin.Engine) {
 	// user
 	group.POST("/user", v1.CreateUser)
 	group.POST("/session", v1.Login)
-	group.DELETE("/sesssion", v1.Logout)
+	group.DELETE("/session", middlewares.Handlers[1], v1.Logout)
 
 }

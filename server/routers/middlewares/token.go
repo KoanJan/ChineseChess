@@ -15,13 +15,14 @@ const (
 
 // GenerateToken generates a new jwt token with userID
 func GenerateToken(userID string) (string, error) {
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"nbf": time.Date(2017, 7, 30, 0, 0, 0, 0, time.UTC).Unix(),
 		"exp": time.Now().AddDate(0, 1, 0).Unix(),
 
-		"usr_id": userID,
+		JwtUserIDKey: userID,
 	})
-	return token.SignedString(JwtSecret)
+	return token.SignedString([]byte(JwtSecret))
 }
 
 func keyFunc(token *jwt.Token) (interface{}, error) {

@@ -33,8 +33,7 @@ func Delete(model models.Model) (err error) {
 }
 
 // Find can find a model.
-// If the condition m with type bson.M is not nil, it will find by the m at first, and else find by the ID of model
-func FindOne(model models.Model, m ...bson.M) (err error) {
+func FindOne(model models.Model, m bson.M) (err error) {
 	db.Do(model.CollectionName(), func(c *mgo.Collection) {
 		err = c.Find(m).One(model)
 	})

@@ -12,11 +12,12 @@ type Session struct {
 	Nick   string `json:"nick"`    // 用户昵称
 }
 
+// GenerateSessionString returns a JSON string of Session
 func GenerateSessionString(user *models.User) string {
 
 	session := new(Session)
 	session.UserID = user.ID.Hex()
 	session.Nick = user.Nick
-	sessionString, _ := json.Marshal(session)
-	return string(sessionString)
+	sessionBytes, _ := json.Marshal(session)
+	return string(sessionBytes)
 }
