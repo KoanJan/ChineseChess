@@ -10,4 +10,5 @@ message RespMsg {
     }
     Code code = 2; // 状态码
     bytes data = 3; // 数据
+    string err = 4; // 错误信息
 }

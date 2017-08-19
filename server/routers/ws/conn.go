@@ -5,7 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
+
+	"ChineseChess/server/routers/ws/api/game"
+	"ChineseChess/server/routers/ws/msg"
 )
 
 const (
@@ -35,15 +39,38 @@ func (c *Conn) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	for {
-		_, msg, err := c.conn.ReadMessage()
+		_, data, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)
 			}
 			break
 		}
-		// TODO do something
-		log.Println(msg)
+		// switch msg type
+		message := new(msg.Msg)
+		if err = proto.Unmarshal(data, message); err != nil {
+			log.Printf("error: %v", err)
+			continue
+		}
+		switch message.Type {
+		case msg.Msg_Chat:
+			log.Println("error: chat message is not supported yet")
+		case msg.Msg_Game:
+			resp := new(msg.RespMsg)
+			respData, err := game.Dispatch(message.Body)
+			if err != nil {
+				resp.Err = err.Error()
+				resp.Code = msg.RespMsg_Failed
+			} else {
+				resp.Data = respData
+				resp.Code = msg.RespMsg_Done
+			}
+			b, _ := proto.Marshal(resp)
+			c.conn.WriteMessage(websocket.TextMessage, b)
+		default:
+			log.Println("error: unknown message type")
+		}
+		log.Println(data)
 	}
 }
 

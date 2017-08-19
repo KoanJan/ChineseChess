@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"ChineseChess/server/cache"
 	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // Play 下子
