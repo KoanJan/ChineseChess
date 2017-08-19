@@ -1,0 +1,16 @@
+syntax = "proto3";
+package msg;
+
+// 消息
+message Msg {
+
+    string id = 1; // 消息ID
+    enum Type {
+        Unknown = 0; // 未知消息类型
+        Chat = 1; // 聊天消息类型
+        Game = 2; // 游戏通信消息类型
+        Resp = 3; // 服务端返回的数据消息类型
+    }
+    Type type = 2;// 消息类型
+    bytes body = 3; // 请求数据
+}

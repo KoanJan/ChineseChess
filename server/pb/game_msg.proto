@@ -1,0 +1,10 @@
+syntax = "proto3";
+package msg;
+
+// 游戏消息
+message GameMsg {
+
+    string uid = 1; // 用户ID
+    string call = 2; // 调用方法
+    bytes data = 3; // 提交的数据
+}

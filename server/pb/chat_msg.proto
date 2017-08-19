@@ -1,0 +1,6 @@
+syntax = "proto3";
+package msg;
+
+message ChatMsg {
+    // TODO define the data structure of ChatMsg
+}
