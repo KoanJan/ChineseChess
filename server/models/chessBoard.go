@@ -31,6 +31,14 @@ const (
 	PieceZu            // 卒
 )
 
+// 棋子
+const (
+	_                       = iota
+	ChessBoardStatusReady   // 准备
+	ChessBoardStatusPlaying // 比赛中
+	ChessBoardStatusEnded   // 结束
+)
+
 /*
 棋盘
 */
@@ -40,6 +48,7 @@ type ChessBoard struct {
 	RedUserID   bson.ObjectId  `bson:"red_user_id",json:"red_user_id,string"`     // 红方用户ID
 	BlackUserID bson.ObjectId  `bson:"black_user_id",json:"black_user_id,string"` // 黑方用户ID
 	WinnerID    *bson.ObjectId `bson:"winner_id",json:"winner_id,string"`         // 获胜方用户ID(如果是和局则该局无值)
+	Status      int32          `bson:"status",json:"status"`                      // 棋局状态
 
 	Others []string `bson:"-",json:"-"` // 观战者
 
@@ -112,7 +121,6 @@ func NewChessBoard(redUserID, blackUserID string) *ChessBoard {
 	chessBoard.board = board
 	chessBoard.Steps = []Step{}
 	chessBoard.RedUserID = bson.ObjectIdHex(redUserID)
-	fmt.Println(chessBoard.RedUserID)
 	chessBoard.BlackUserID = bson.ObjectIdHex(blackUserID)
 
 	return chessBoard
