@@ -64,6 +64,21 @@ func (this *chessBoardCache) remove(boardID string) {
 	}
 }
 
+func (this *chessBoardCache) snapshot(boardID string) (models.ChessBoard, error) {
+
+	this.cachelock.Lock()
+	boardLock, ok := this.cachelock.locks[boardID]
+	if !ok {
+		this.cachelock.Unlock()
+		return models.ChessBoard{}, errors.New("棋局不存在")
+	}
+	boardLock.Lock()
+	// 拿到私有锁之后就没必要继续持有公有锁了, 立即释放以免降低性能
+	this.cachelock.Unlock()
+	defer boardLock.Unlock()
+	return *(boardCache.cache[boardID]), nil
+}
+
 func newChessBoardCache() *chessBoardCache {
 	return &chessBoardCache{make(map[string]*models.ChessBoard), &chessBoardCacheLock{locks: make(map[string]*sync.Mutex)}}
 }
@@ -81,4 +96,9 @@ func AddBoardCache(board *models.ChessBoard) error {
 // 删除内存中的棋局
 func RemoveBoardCache(boardID string) {
 	boardCache.remove(boardID)
+}
+
+// 获取棋局快照
+func SnapshotBoard(boardID string) (models.ChessBoard, error) {
+	return boardCache.snapshot(boardID)
 }

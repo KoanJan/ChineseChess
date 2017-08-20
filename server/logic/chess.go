@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -12,13 +13,17 @@ import (
 )
 
 // Play 下子
-func Play(x1, y1, x2, y2 int32, boardID, userID string) error {
+func Play(x1, y1, x2, y2 int32, step int, boardID, userID string) ([]byte, error) {
 
 	// 验证是否符合规则
-	return cache.UpdateBoardCache(boardID, func(board *models.ChessBoard) error {
+	if err := cache.UpdateBoardCache(boardID, func(board *models.ChessBoard) error {
 
 		if board.WinnerID != nil {
 			return errors.New("比赛已经结束")
+		}
+
+		if step != len(board.Steps)+1 {
+			return errors.New("你穿越了")
 		}
 
 		if !AllowedUnderRules(x1, y1, x2, y2, board, userID) {
@@ -54,5 +59,10 @@ func Play(x1, y1, x2, y2 int32, boardID, userID string) error {
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return []byte{}, err
+	} else {
+		resp := &PlayResp{x1, x2, y1, y2, step}
+		return json.Marshal(resp)
+	}
 }

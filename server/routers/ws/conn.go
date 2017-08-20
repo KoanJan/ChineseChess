@@ -5,11 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-
-	"ChineseChess/server/routers/ws/api/game"
-	"ChineseChess/server/routers/ws/msg"
 )
 
 const (
@@ -28,7 +24,18 @@ var upgrader = websocket.Upgrader{
 type Conn struct {
 	hub  *Hub
 	conn *websocket.Conn
-	send chan []byte
+	wch  chan []byte
+}
+
+// Write some data into a connection
+func (c *Conn) Write(data []byte) {
+	c.wch <- data
+}
+
+// Read data from a connection
+func (c *Conn) Read() ([]byte, error) {
+	_, data, err := c.conn.ReadMessage()
+	return data, err
 }
 
 func (c *Conn) readPump() {
@@ -38,40 +45,7 @@ func (c *Conn) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-	for {
-		_, data, err := c.conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Printf("error: %v", err)
-			}
-			break
-		}
-		// switch msg type
-		message := new(msg.Msg)
-		if err = proto.Unmarshal(data, message); err != nil {
-			log.Printf("error: %v", err)
-			continue
-		}
-		switch message.Type {
-		case msg.Msg_Chat:
-			log.Println("error: chat message is not supported yet")
-		case msg.Msg_Game:
-			resp := new(msg.RespMsg)
-			respData, err := game.Dispatch(message.Body)
-			if err != nil {
-				resp.Err = err.Error()
-				resp.Code = msg.RespMsg_Failed
-			} else {
-				resp.Data = respData
-				resp.Code = msg.RespMsg_Done
-			}
-			b, _ := proto.Marshal(resp)
-			c.conn.WriteMessage(websocket.TextMessage, b)
-		default:
-			log.Println("error: unknown message type")
-		}
-		log.Println(data)
-	}
+	handle(c)
 }
 
 func (c *Conn) writePump() {
@@ -80,7 +54,7 @@ func (c *Conn) writePump() {
 
 	for {
 		select {
-		case msg, ok := <-c.send:
+		case msg, ok := <-c.wch:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -94,9 +68,9 @@ func (c *Conn) writePump() {
 			w.Write(msg)
 
 			// write all
-			n := len(c.send)
+			n := len(c.wch)
 			for i := 0; i < n; i++ {
-				w.Write(<-c.send)
+				w.Write(<-c.wch)
 			}
 
 			if err := w.Close(); err != nil {
@@ -123,4 +97,12 @@ func serveWS(uid string, w http.ResponseWriter, r *http.Request) {
 
 	go c.readPump()
 	go c.writePump()
+}
+
+// Push data to one connection
+func Push(uid string, data []byte) {
+
+	if c, ol := wsHub.conns[uid]; ol {
+		c.Write(data)
+	}
 }

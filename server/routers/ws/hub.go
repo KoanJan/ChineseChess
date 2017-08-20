@@ -16,7 +16,7 @@ func (this *Hub) run() {
 		case msg := <-this.broadcast:
 			for uid, c := range this.conns {
 				if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-					close(c.send)
+					close(c.wch)
 					delete(this.conns, uid)
 				}
 			}

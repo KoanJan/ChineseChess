@@ -41,6 +41,8 @@ type ChessBoard struct {
 	BlackUserID bson.ObjectId  `bson:"black_user_id",json:"black_user_id,string"` // 黑方用户ID
 	WinnerID    *bson.ObjectId `bson:"winner_id",json:"winner_id,string"`         // 获胜方用户ID(如果是和局则该局无值)
 
+	Others []string `bson:"-",json:"-"` // 观战者
+
 	board [ChessBoardMaxX + 1][ChessBoardMaxY + 1]int32 // 棋盘
 
 }

@@ -5,6 +5,7 @@ package msg;
 message GameMsg {
 
     string uid = 1; // 用户ID
-    string call = 2; // 调用方法
-    bytes data = 3; // 提交的数据
+    string boardID = 2; // 棋局ID
+    string call = 3; // 调用方法
+    bytes data = 4; // 提交的数据
 }

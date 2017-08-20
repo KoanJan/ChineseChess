@@ -14,7 +14,7 @@ var api map[string]func([]byte) ([]byte, error) = map[string]func([]byte) ([]byt
 		if err := json.Unmarshal(data, form); err != nil {
 			return nil, err
 		}
-		return nil, Play(form.X1, form.Y1, form.X2, form.Y2, form.BoardID, form.UserID)
+		return Play(form.X1, form.Y1, form.X2, form.Y2, form.Step, form.BoardID, form.UserID)
 	},
 }
 
