@@ -122,6 +122,7 @@ func NewChessBoard(redUserID, blackUserID string) *ChessBoard {
 	chessBoard.Steps = []Step{}
 	chessBoard.RedUserID = bson.ObjectIdHex(redUserID)
 	chessBoard.BlackUserID = bson.ObjectIdHex(blackUserID)
+	chessBoard.Status = ChessBoardStatusReady
 
 	return chessBoard
 }
