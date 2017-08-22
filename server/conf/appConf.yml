@@ -7,4 +7,4 @@ mongoConf:
 redisConf:
   address: "127.0.0.1:6379"
 loggerConf:
-  path: "/var/log/"
+  path: "./log"

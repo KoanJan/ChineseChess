@@ -16,6 +16,15 @@ var api map[string]func([]byte) ([]byte, error) = map[string]func([]byte) ([]byt
 		}
 		return Play(form.X1, form.Y1, form.X2, form.Y2, form.Step, form.BoardID, form.UserID)
 	},
+
+	GameLogicFuncMatch: func(data []byte) ([]byte, error) {
+
+		result, err := Match(string(data))
+		if err == nil {
+			return json.Marshal(result)
+		}
+		return []byte{}, err
+	},
 }
 
 // GameLogicFunc returns a logic func if exists,

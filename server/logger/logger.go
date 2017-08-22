@@ -1,11 +1,13 @@
 package logger
 
 import (
-	"ChineseChess/server/conf"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
+
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
+
+	"ChineseChess/server/conf"
 )
 
 var logger *logrus.Logger

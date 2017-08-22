@@ -2,10 +2,10 @@ package daf
 
 import (
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"ChineseChess/server/db"
 	"ChineseChess/server/models"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // Insert can insert a model into db

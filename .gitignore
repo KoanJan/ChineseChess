@@ -16,3 +16,6 @@
 .glide/
 
 .idea/
+/log/
+log/
+server/test/

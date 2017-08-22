@@ -2,9 +2,9 @@ package db
 
 import (
 	"sync"
+	"time"
 
 	"gopkg.in/mgo.v2"
-	"time"
 )
 
 const (
