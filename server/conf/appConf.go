@@ -48,11 +48,17 @@ var AppConf *appConf = new(appConf)
 // 初始化配置
 func init() {
 
-	data, err := ioutil.ReadFile("server/conf/appConf.yml")
+	initFlag()
+
+	var confPath string = "./server/conf/appConf.yml"
+	if _confPath, ok := FlagArgs(FlagConfFilePath); ok {
+		confPath = _confPath
+	}
+	data, err := ioutil.ReadFile(confPath)
 	if err != nil {
-		panic("读取配置文件信息出错!")
+		panic(err)
 	}
 	if err = yaml.Unmarshal(data, AppConf); err != nil {
-		panic("读取配置文件信息出错!")
+		panic(err)
 	}
 }
