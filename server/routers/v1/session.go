@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"ChineseChess/server/daf"
+	"ChineseChess/server/logger"
 	"ChineseChess/server/models"
 	"ChineseChess/server/redis"
 	"ChineseChess/server/routers/middlewares"
@@ -24,6 +25,8 @@ type loginForm struct {
 
 // Login function will be called while user logining
 func Login(c *gin.Context) {
+
+	logger.Debug("oil login")
 
 	form := new(loginForm)
 	if err := c.BindJSON(form); err != nil {

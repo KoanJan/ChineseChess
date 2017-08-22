@@ -1,9 +1,11 @@
 package logger
 
 import (
+	"ChineseChess/server/conf"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-	"log"
+	"io"
+	"os"
 )
 
 var logger *logrus.Logger
@@ -83,13 +85,24 @@ func WithError(err error) *logrus.Entry {
 	return logger.WithError(err)
 }
 
+var Writer io.WriteCloser
+
 func init() {
 
-	// TODO finish config
+	var err error
+	if err = os.MkdirAll(conf.AppConf.Logger.Path, os.ModePerm); err != nil {
+		panic(err)
+	}
+	Writer, err = os.OpenFile(conf.AppConf.Logger.FilePath(), os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+
 	logger = logrus.New()
 	logger.Formatter = &logrus.JSONFormatter{}
 	logger.Hooks.Add(lfshook.NewHook(lfshook.PathMap{
-		logrus.InfoLevel:  "/var/log/info.log",
-		logrus.ErrorLevel: "/var/log/error.log",
+		logrus.InfoLevel:  conf.AppConf.Logger.FilePath(),
+		logrus.ErrorLevel: conf.AppConf.Logger.FilePath(),
 	}))
+
 }

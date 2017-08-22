@@ -1,8 +1,10 @@
 mongoConf:
-  host: 127.0.0.1
+  host: "127.0.0.1"
   port: 27017
   username: ~
   password: ~
-  dbName: chinese_chess
+  dbName: "chinese_chess"
 redisConf:
-  address: 127.0.0.1:6379
+  address: "127.0.0.1:6379"
+loggerConf:
+  path: "/var/log/"
