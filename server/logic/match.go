@@ -7,6 +7,8 @@ import (
 	"ChineseChess/server/cache"
 	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
+	"ChineseChess/server/routers/ws/msg"
+	"encoding/json"
 )
 
 var (
@@ -48,12 +50,21 @@ func handleQueue() {
 }
 
 // 匹配
-func Match(userID string) (board *models.ChessBoard, err error) {
+func Match(gameMsg *msg.GameMsg, uid ...string) {
 
-	matchResults[userID] = make(chan *matchResult, 1)
-	matchingQueue <- userID
-	r := <-matchResults[userID]
-	close(matchResults[userID])
-	delete(matchResults, userID)
-	return r.board, r.err
+	matchResults[uid[0]] = make(chan *matchResult, 1)
+	matchingQueue <- uid[0]
+	r := <-matchResults[uid[0]]
+	close(matchResults[uid[0]])
+	delete(matchResults, uid[0])
+	var (
+		data []byte = []byte{}
+		err  error  = nil
+	)
+
+	if r.err == nil {
+		data, err = json.Marshal(r.board)
+	}
+	// send game server msg
+	SendGameServerMsg(gameMsg.Call, data, err, uid[0])
 }

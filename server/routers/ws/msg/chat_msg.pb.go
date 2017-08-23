@@ -8,13 +8,11 @@ It is generated from these files:
 	chat_msg.proto
 	game_msg.proto
 	msg.proto
-	resp_msg.proto
 
 It has these top-level messages:
 	ChatMsg
 	GameMsg
 	Msg
-	RespMsg
 */
 package msg
 

@@ -16,6 +16,12 @@ var (
 	invitors map[string]chan bool   = make(map[string]chan bool)   // 邀请者
 )
 
+// InviteForm contains invitor and invitee of a invitation
+type InviteForm struct {
+	Invitor string `json:"invitor"` // 邀请者
+	Invitee string `json:"invitee"` // 受邀者
+}
+
 // Invite invites a user to play game
 func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 

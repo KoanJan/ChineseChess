@@ -4,8 +4,7 @@ package msg;
 // 游戏消息
 message GameMsg {
 
-    string uid = 1; // 用户ID
-    string boardID = 2; // 棋局ID
-    string call = 3; // 调用方法
-    bytes data = 4; // 提交的数据
+    string call = 1; // 调用方法
+    bytes data = 2; // 数据
+    string err = 3; // 错误信息(服务端发给客户端的消息才可能有)
 }

@@ -22,6 +22,8 @@ var upgrader = websocket.Upgrader{
 
 // Conn is a WebSocket connection
 type Conn struct {
+	UID string
+
 	hub  *Hub
 	conn *websocket.Conn
 	wch  chan []byte
@@ -92,7 +94,7 @@ func serveWS(uid string, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	c := &Conn{wsHub, conn, make(chan []byte, 256)}
+	c := &Conn{uid, wsHub, conn, make(chan []byte, 256)}
 	c.hub.conns[uid] = c
 
 	go c.readPump()
@@ -104,5 +106,13 @@ func Push(uid string, data []byte) {
 
 	if c, ol := wsHub.conns[uid]; ol {
 		c.Write(data)
+	}
+}
+
+// Broadcast data
+func Broadcast(data []byte) {
+
+	for uid, _ := range wsHub.conns {
+		Push(uid, data)
 	}
 }

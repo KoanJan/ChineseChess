@@ -6,8 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
-	"ChineseChess/server/cache"
-	"ChineseChess/server/routers/ws/api/game"
+	"ChineseChess/server/logic"
 	"ChineseChess/server/routers/ws/msg"
 )
 
@@ -32,7 +31,7 @@ func handle(c *Conn) {
 		case msg.Msg_Chat:
 			handleChat(message)
 		case msg.Msg_Game:
-			handleGame(message)
+			handleGame(message, c.UID)
 		default:
 			log.Println("error: unknown message type")
 		}
@@ -47,33 +46,44 @@ func handleChat(message *msg.Msg) {
 }
 
 // 游戏内消息处理
-func handleGame(message *msg.Msg) {
+func handleGame(message *msg.Msg, uid string) {
 
 	gameMsg := new(msg.GameMsg)
 	if err := proto.Unmarshal(message.Body, gameMsg); err != nil {
 		log.Printf("error: %v\n", err)
 		return
 	}
-	resp := new(msg.RespMsg)
-	respData, err := game.Dispatch(gameMsg)
-	if err != nil {
-		resp.Err = err.Error()
-		resp.Code = msg.RespMsg_Failed
-	} else {
-		resp.Data = respData
-		resp.Code = msg.RespMsg_Done
-	}
-	b, _ := proto.Marshal(resp)
+	go logic.GameLogicFunc(gameMsg.Call)(gameMsg, uid)
 
-	// 获取棋盘状态
-	snapshot, err := cache.SnapshotBoard(gameMsg.BoardID)
-	if err != nil {
-		log.Printf("error: %v\n", err)
-		return
-	}
+}
 
-	// 转发给所有观看者或者棋手
-	for _, userID := range snapshot.Others {
-		Push(userID, b)
-	}
+// 服务端发送的游戏消息
+func handleServer() {
+
+	logic.HandleGameServerMsg(func(gsm *msg.GameServerMsg) {
+
+		body, err := proto.Marshal(gsm.GameMsg)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		m := new(msg.Msg)
+		m.Type = msg.Msg_Game
+		m.Body = body
+		data, err := proto.Marshal(m)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		if len(gsm.UIDs) == 0 {
+
+			// broadcast
+			Broadcast(data)
+			return
+		}
+		for _, uid := range gsm.UIDs {
+
+			Push(uid, data)
+		}
+	})
 }
