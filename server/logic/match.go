@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	matchingQueue chan string                  // 匹配队列
-	matchResults  map[string]chan *matchResult // 匹配结果
+	matchingQueue chan string                  = make(chan string, 1024)            // 匹配队列
+	matchResults  map[string]chan *matchResult = make(map[string]chan *matchResult) // 匹配结果
 )
 
 // 匹配结果
@@ -56,10 +56,4 @@ func Match(userID string) (board *models.ChessBoard, err error) {
 	close(matchResults[userID])
 	delete(matchResults, userID)
 	return r.board, r.err
-}
-
-func init() {
-
-	matchingQueue = make(chan string, 1024)
-	matchResults = make(map[string]chan *matchResult)
 }

@@ -19,3 +19,9 @@ type PlayResp struct {
 	Y2   int32 `json:"y2"`
 	Step int   `json:"step"` // 步数验证
 }
+
+// InviteForm contains invitor and invitee of a invitation
+type InviteForm struct {
+	Invitor string `json:"invitor"` // 邀请者
+	Invitee string `json:"invitee"` // 受邀者
+}
