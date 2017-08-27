@@ -37,7 +37,9 @@ func Play(gameMsg *msg.GameMsg, uid ...string) {
 
 	form := new(PlayForm)
 	if err := json.Unmarshal(gameMsg.Data, form); err != nil {
-		// TODO send error
+
+		PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("数据解析失败!"), uid...)
+		return
 	}
 
 	// 验证是否符合规则
@@ -85,10 +87,18 @@ func Play(gameMsg *msg.GameMsg, uid ...string) {
 
 		return nil
 	}); err != nil {
-		// TODO send error
+
+		PushGameServerMsg(GameLogicFuncPlay, []byte{}, err, uid...)
+		return
 	} else {
-		//resp := &PlayResp{form.X1, form.Y1, form.X2, form.Y2, form.Step}
-		// TODO send resp
+		resp := &PlayResp{form.X1, form.Y1, form.X2, form.Y2, form.Step}
+		respData, e := json.Marshal(resp)
+		if e != nil {
+			PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("操作成功, 同步棋局失败"), uid...)
+			return
+		}
+		PushGameServerMsg(GameLogicFuncPlay, respData, nil, uid...)
+		return
 	}
 }
 

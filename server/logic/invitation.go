@@ -25,21 +25,27 @@ type InviteForm struct {
 // Invite invites a user to play game
 func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 
+	// TODO 判断对方是否在游戏中, 如果游戏中则直接拒绝
 	if !UserIsOnline(invitee) {
 		return nil, errors.New("对方不在线")
 	}
 
 	if bson.IsObjectIdHex(invitor) && bson.IsObjectIdHex(invitee) {
+
 		invitation := models.NewInvitation(bson.ObjectIdHex(invitor), bson.ObjectIdHex(invitee))
 		if err := daf.Insert(invitation); err != nil {
 			return nil, err
 		}
+
 		// 通知受邀者
 		timeout := make(chan bool)
 		go func() { invitees[invitee] <- invitor }()
 		go func() { time.Sleep(30 * time.Second); timeout <- true }()
 		select {
 		case res := <-invitors[invitor]:
+
+			close(timeout)
+
 			// 对方回应
 			if res {
 				// 对方接受邀请
@@ -54,6 +60,7 @@ func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 			}
 			return nil, errors.New("对方拒绝邀请")
 		case <-timeout:
+
 			// 邀请超时
 			close(timeout)
 			return nil, errors.New("对方未接受")

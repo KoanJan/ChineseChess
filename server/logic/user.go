@@ -2,13 +2,13 @@ package logic
 
 import (
 	"ChineseChess/server/logger"
-	"ChineseChess/server/redis"
+	"ChineseChess/server/redi6"
 )
 
 // 用户是否在线
 func UserIsOnline(userID string) bool {
 
-	reply, err := redis.Get(userID)
+	reply, err := redi6.Get(userID)
 	if err != nil {
 		logger.Error(err)
 		return false

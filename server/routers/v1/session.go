@@ -9,13 +9,9 @@ import (
 	"ChineseChess/server/daf"
 	"ChineseChess/server/logger"
 	"ChineseChess/server/models"
-	"ChineseChess/server/redis"
+	"ChineseChess/server/models/cache"
 	"ChineseChess/server/routers/middlewares"
 	. "ChineseChess/server/routers/render"
-)
-
-const (
-	RedisUserSessionExpire = 7 * 24 * 60 * 60
 )
 
 type loginForm struct {
@@ -50,14 +46,20 @@ func Login(c *gin.Context) {
 	}
 	c.Header(middlewares.JwtTokenHttpHeaderName, token)
 	//
-	redis.Set(user.ID.Hex(), middlewares.GenerateSessionString(user))
-	redis.Expire(user.ID.Hex(), RedisUserSessionExpire)
+	session := cache.NewSession(user.ID.Hex(), user.Nick, cache.SessionStatusOK)
+	if err := session.Save(); err != nil {
+		RenderErr(c, err)
+		return
+	}
 	RenderOk(c)
 }
 
 // Logout function will be called while user logout
 func Logout(c *gin.Context) {
 
-	redis.Del(c.GetString(middlewares.CurrentUserIDKey))
+	if err := cache.DelSession(c.GetString(middlewares.CurrentUserIDKey)); err != nil {
+		RenderErr(c, err)
+		return
+	}
 	RenderOk(c)
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"ChineseChess/server/redis"
+	"ChineseChess/server/models/cache"
 	. "ChineseChess/server/routers/render"
 )
 
@@ -29,14 +29,14 @@ func sessionHandler(c *gin.Context) {
 		RenderErr(c, errors.New("未登录或登录已过期"), 401)
 		return
 	}
-	reply, err := redis.Get(GetUserID(c))
-	if reply == nil {
-		if err != nil {
-			c.Error(err)
-		}
+	session, err := cache.FindSession(GetUserID(c))
+
+	if err != nil {
+		c.Error(err)
 		RenderErr(c, errors.New("未登录或登录已过期"), 401)
+
 	} else {
-		c.Set(CurrentUserIDKey, reply)
+		c.Set(CurrentUserIDKey, session.UserID)
 	}
 }
 
