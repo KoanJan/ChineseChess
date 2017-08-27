@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 
@@ -8,7 +9,6 @@ import (
 	"ChineseChess/server/daf"
 	"ChineseChess/server/models"
 	"ChineseChess/server/routers/ws/msg"
-	"encoding/json"
 )
 
 var (
@@ -66,5 +66,5 @@ func Match(gameMsg *msg.GameMsg, uid ...string) {
 		data, err = json.Marshal(r.board)
 	}
 	// send game server msg
-	SendGameServerMsg(gameMsg.Call, data, err, uid[0])
+	PushGameServerMsg(gameMsg.Call, data, err, uid[0])
 }

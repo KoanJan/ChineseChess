@@ -10,8 +10,8 @@ import (
 	"ChineseChess/server/routers/ws/msg"
 )
 
-// 消息处理
-func handle(c *Conn) {
+// 监听来自客户端的消息
+func handleClient(c *Conn) {
 
 	for {
 		data, err := c.Read()
@@ -29,9 +29,9 @@ func handle(c *Conn) {
 		}
 		switch message.Type {
 		case msg.Msg_Chat:
-			handleChat(message)
+			handleChatClient(message)
 		case msg.Msg_Game:
-			handleGame(message, c.UID)
+			handleGameClient(message, c.UID)
 		default:
 			log.Println("error: unknown message type")
 		}
@@ -40,13 +40,13 @@ func handle(c *Conn) {
 }
 
 // 聊天消息处理
-func handleChat(message *msg.Msg) {
+func handleChatClient(message *msg.Msg) {
 
 	log.Println("error: chat message is not supported yet")
 }
 
 // 游戏内消息处理
-func handleGame(message *msg.Msg, uid string) {
+func handleGameClient(message *msg.Msg, uid string) {
 
 	gameMsg := new(msg.GameMsg)
 	if err := proto.Unmarshal(message.Body, gameMsg); err != nil {
@@ -55,35 +55,4 @@ func handleGame(message *msg.Msg, uid string) {
 	}
 	go logic.GameLogicFunc(gameMsg.Call)(gameMsg, uid)
 
-}
-
-// 服务端发送的游戏消息
-func handleServer() {
-
-	logic.HandleGameServerMsg(func(gsm *msg.GameServerMsg) {
-
-		body, err := proto.Marshal(gsm.GameMsg)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		m := new(msg.Msg)
-		m.Type = msg.Msg_Game
-		m.Body = body
-		data, err := proto.Marshal(m)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		if len(gsm.UIDs) == 0 {
-
-			// broadcast
-			Broadcast(data)
-			return
-		}
-		for _, uid := range gsm.UIDs {
-
-			Push(uid, data)
-		}
-	})
 }

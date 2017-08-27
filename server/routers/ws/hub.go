@@ -6,11 +6,14 @@ var wsHub *Hub
 
 // Hub maintains all WebSocket connections
 type Hub struct {
-	conns     map[string]*Conn
 	broadcast chan []byte
+	conns     map[string]*Conn
 }
 
 func (this *Hub) run() {
+
+	handleServer(this) // 监听来自服务端的消息
+
 	for {
 		select {
 		case msg := <-this.broadcast:
@@ -22,6 +25,20 @@ func (this *Hub) run() {
 			}
 		}
 	}
+}
+
+// Push data to one connection
+func (this *Hub) Push(uid string, data []byte) {
+
+	if c, ol := this.conns[uid]; ol {
+		c.Write(data)
+	}
+}
+
+// Broadcast data
+func (this *Hub) Broadcast(data []byte) {
+
+	this.broadcast <- data
 }
 
 func newHub() *Hub {

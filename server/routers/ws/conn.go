@@ -47,7 +47,7 @@ func (c *Conn) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-	handle(c)
+	handleClient(c) // 监听来自客户端的消息
 }
 
 func (c *Conn) writePump() {
@@ -99,20 +99,4 @@ func serveWS(uid string, w http.ResponseWriter, r *http.Request) {
 
 	go c.readPump()
 	go c.writePump()
-}
-
-// Push data to one connection
-func Push(uid string, data []byte) {
-
-	if c, ol := wsHub.conns[uid]; ol {
-		c.Write(data)
-	}
-}
-
-// Broadcast data
-func Broadcast(data []byte) {
-
-	for uid, _ := range wsHub.conns {
-		Push(uid, data)
-	}
 }

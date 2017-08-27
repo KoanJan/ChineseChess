@@ -15,7 +15,7 @@ const (
 var msgBox chan *msg.GameServerMsg = make(chan *msg.GameServerMsg, 1024) // 消息推送
 
 // 推送消息
-func SendGameServerMsg(call string, data []byte, err error, uid ...string) {
+func PushGameServerMsg(call string, data []byte, err error, uid ...string) {
 
 	gameServerMsg := new(msg.GameServerMsg)
 	gameServerMsg.UIDs = uid // broadcast if len(uid) is 0
@@ -62,6 +62,6 @@ func noSuchFunc(funcName string) func(*msg.GameMsg, ...string) {
 
 	return func(gameMsg *msg.GameMsg, uid ...string) {
 
-		SendGameServerMsg(gameMsg.Call, []byte{}, errors.New(fmt.Sprintf("no such func called '%s'", string(funcName))), uid[0])
+		PushGameServerMsg(gameMsg.Call, []byte{}, errors.New(fmt.Sprintf("no such func called '%s'", string(funcName))), uid[0])
 	}
 }
