@@ -18,12 +18,28 @@ var (
 	invitors map[string]chan bool   = make(map[string]chan bool)   // 邀请者
 )
 
-// InviteForm contains invitor and invitee of a invitation
-type InviteForm struct {
+// 消费邀请类型
+type InvitationReplyOp = bool
+
+const (
+	InvitationReplyOpAccept InvitationReplyOp = true  // 接受
+	InvitationReplyOpReject InvitationReplyOp = false // 拒绝
+)
+
+// InvitationForm contains invitor and invitee of an invitation
+type InvitationForm struct {
 	Invitor string `json:"invitor"` // 邀请者
 	Invitee string `json:"invitee"` // 受邀者
 }
 
+// InvitationResp contains all info including 'op' of an invitaion
+type InvitationResp struct {
+	Invitor string            `json:"invitor"` // 邀请者
+	Invitee string            `json:"invitee"` // 受邀者
+	Op      InvitationReplyOp `json:"op"`      // 对邀请的回复
+}
+
+// TODO fix parameters and unmarshal the msg
 // Invite invites a user to play game
 func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 
@@ -80,6 +96,31 @@ func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 		return nil, nil
 	}
 	return nil, errors.New("数据不合法")
+}
+
+// TODO fix
+// ReplyInvitation will reply an invitation, either accepting or rejection
+func ReplyInvitation(invitor, invitee string, op InvitationReplyOp) (*models.ChessBoard, error) {
+
+	if op == InvitationReplyOpReject {
+
+		// 拒绝
+		session, err := modelCache.FindSession(invitor)
+
+		// 邀请者正在等待回复
+		// TODO 并发安全处理
+		if err == nil && session.Status == modelCache.SessionStatusOK {
+			invitors[invitor] <- false
+		}
+		return nil, errors.New("已拒绝")
+	}
+
+	session, err := modelCache.FindSession(invitor)
+	if err != nil || session.Status != modelCache.SessionStatusOK {
+		return nil, errors.New("邀请已过期")
+	}
+	invitors[invitor] <- true
+	return nil, nil
 }
 
 // JoinInvitees helps a user joining the invitees
