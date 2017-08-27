@@ -8,7 +8,9 @@ import (
 
 	"ChineseChess/server/cache"
 	"ChineseChess/server/daf"
+	"ChineseChess/server/logger"
 	"ChineseChess/server/models"
+	modelCache "ChineseChess/server/models/cache"
 )
 
 var (
@@ -25,9 +27,13 @@ type InviteForm struct {
 // Invite invites a user to play game
 func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 
-	// TODO 判断对方是否在游戏中, 如果游戏中则直接拒绝
-	if !UserIsOnline(invitee) {
+	// 判断受邀者状态
+	session, err := modelCache.FindSession(invitee)
+	if err != nil {
 		return nil, errors.New("对方不在线")
+	}
+	if session.Status != modelCache.SessionStatusOK {
+		return nil, errors.New("对方拒绝邀请")
 	}
 
 	if bson.IsObjectIdHex(invitor) && bson.IsObjectIdHex(invitee) {
@@ -46,8 +52,9 @@ func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 
 			close(timeout)
 
-			// 对方回应
+			// 对方回应(理论上邀请者每个等待回复期间只邀请了一个玩家)
 			if res {
+
 				// 对方接受邀请
 				board := models.NewChessBoard(invitor, invitee)
 				if err := daf.Insert(board); err != nil {
@@ -55,6 +62,10 @@ func Invite(invitor, invitee string) (*models.ChessBoard, error) {
 				}
 				if err := cache.AddBoardCache(board); err != nil {
 					return nil, errors.New("服务器出错")
+				}
+				// (理论上此处不会并发竞争)
+				if err := modelCache.UpdateSession(invitor, modelCache.SessionFieldStatus, modelCache.SessionStatusGame); err != nil {
+					logger.Warn(err)
 				}
 				return board, nil
 			}

@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"fmt"
+
 	"github.com/garyburd/redigo/redis"
 
 	"ChineseChess/server/models/cache/utils"
@@ -15,6 +17,23 @@ const (
 	SessionStatusGame SessionStatus = "game" // 游戏中
 )
 
+// SessionField
+type SessionField = string
+
+const (
+	// key
+	SessionKeyF = "session.%s"
+
+	// field
+	SessionFieldNick   SessionField = "nick"
+	SessionFieldStatus SessionField = "status"
+)
+
+// SessionKey returns a session key of redis
+func SessionKey(userID string) string {
+	return fmt.Sprintf(SessionKeyF, userID)
+}
+
 const SessionExpiry int32 = 7 * 24 * 3600 // 登陆默认保存7天
 
 // Session
@@ -27,42 +46,43 @@ type Session struct {
 // Save a session into redis
 func (this *Session) Save() error {
 
-	token, err := utils.Lock(this.UserID)
-	defer utils.Unlock(this.UserID, token)
+	key := SessionKey(this.UserID)
+	token, err := utils.Lock(key)
+	defer utils.Unlock(key, token)
 	if err != nil {
 		return err
 	}
-	_, err = redi6.Hmset(utils.SessionKey(this.UserID), utils.SessionFieldNick, this.Nick, utils.SessionFieldStatus, this.Status)
-	if err != nil {
+	if _, err = redi6.Hmset(redis.Args{key}.AddFlat(this)...); err != nil {
 		return err
 	}
-	redi6.Expire(utils.SessionKey(this.UserID), SessionExpiry)
+	redi6.Expire(key, SessionExpiry)
 	return nil
 }
 
 // UpdateSession update a session with it's one field
-func UpdateSession(userID string, field utils.SessionField, value interface{}) error {
+func UpdateSession(userID string, field SessionField, value interface{}) error {
 
-	token, err := utils.Lock(userID)
-	defer utils.Unlock(userID, token)
+	key := SessionKey(userID)
+	token, err := utils.Lock(key)
+	defer utils.Unlock(key, token)
 	if err != nil {
 		return err
 	}
-	_, err = redi6.Hset(userID, field, value)
+	_, err = redi6.Hset(key, field, value)
 	return err
 }
 
 // DelSession delete a session from redis
 func DelSession(userID string) error {
 
-	_, err := redi6.Del(userID)
+	_, err := redi6.Del(SessionKey(userID))
 	return err
 }
 
 // FindSession finds a session by userID from redis
 func FindSession(userID string) (*Session, error) {
 
-	src, err := redis.Values(redi6.Hgetall(userID))
+	src, err := redis.Values(redi6.Hgetall(SessionKey(userID)))
 	if err != nil {
 		return nil, err
 	}
