@@ -51,7 +51,7 @@ func init() {
 
 	initFlag()
 
-	var confPath string = "./server/conf/appConf.yml"
+	var confPath string = "./server/conf/app_conf.yml"
 	if _confPath, ok := FlagArgs(FlagConfFilePath); ok {
 		confPath = _confPath
 	}
