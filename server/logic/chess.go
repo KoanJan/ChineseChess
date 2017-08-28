@@ -361,3 +361,8 @@ func IsInDanger(board *models.ChessBoard, userID string) bool {
 	}
 
 }
+
+// 初始化
+func initChess() {
+
+}

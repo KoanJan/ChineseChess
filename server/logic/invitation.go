@@ -243,3 +243,8 @@ func DeleteUserFromInvitationSystem(userID string) {
 		delete(invitorBoxes, userID)
 	}
 }
+
+// 初始化
+func initInvitation() {
+
+}

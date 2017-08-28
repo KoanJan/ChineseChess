@@ -22,6 +22,7 @@ type matchResult struct {
 	err   error
 }
 
+// 监听匹配队列
 func handleQueue() {
 
 	for {
@@ -67,4 +68,9 @@ func Match(gameMsg *msg.GameMsg, uid string) {
 	}
 	// send game server msg
 	PushGameServerMsg(gameMsg.Call, data, err, uid)
+}
+
+// 初始化
+func initMatch() {
+	go handleQueue()
 }

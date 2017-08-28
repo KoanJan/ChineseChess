@@ -74,3 +74,10 @@ func noSuchFunc(funcName string) func(*msg.GameMsg, string) {
 		PushGameServerMsg(gameMsg.Call, []byte{}, errors.New(fmt.Sprintf("no such func called '%s'", string(funcName))), uid)
 	}
 }
+
+// 初始化
+func init() {
+	initChess()      // 初始化游戏主逻辑
+	initInvitation() // 初始化邀战逻辑
+	initMatch()      // 初始化匹配逻辑
+}
