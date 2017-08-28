@@ -6,5 +6,6 @@ mongoConf:
   dbName: "chinese_chess"
 redisConf:
   address: "127.0.0.1:6379"
+  select: 1
 loggerConf:
   path: "./log"

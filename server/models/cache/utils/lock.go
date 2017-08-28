@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
+
 	"ChineseChess/server/redi6"
 )
 
@@ -23,11 +25,13 @@ const (
 	`
 
 	// default repeat times of lock
-	LockReqeat int = 5
+	LockReqeat int = 9
 
 	// default expiry of lock
-	LockExpiry int32 = 3000
+	LockExpiry int32 = 300
 )
+
+var RedisSetNxError error = errors.New("redis: SET with 'NX' failed")
 
 // Lock will repeat locking a key of redis, and return a lock token and error
 func Lock(key string, expire ...int32) (int64, error) {
@@ -39,25 +43,34 @@ func Lock(key string, expire ...int32) (int64, error) {
 	}
 	for i := 0; i < LockReqeat; i++ {
 		token := time.Now().Unix()
-		if e := redi6.Setnxpx(LockKey(key), token, _expire); e == nil {
-			return token, e
+		c, e := redis.String(redi6.Set(LockKey(key), token, "PX", _expire, "NX"))
+		if e == nil {
+			if c == "OK" {
+				return token, nil
+			}
 		}
-		// 每秒重试一次
-		time.Sleep(time.Second)
+		// retry
+		time.Sleep(30 * time.Millisecond)
 	}
-	return 0, errors.New("请求失败")
+	return 0, RedisSetNxError
 }
 
 // TryLock will try lock a key of redis once
 func TryLock(key string, expire ...int32) (int64, error) {
 
-	// default expiry of the lock is 3000 millseconds
+	// default expiry of the lock is 300 millseconds
 	var _expire int32 = LockExpiry
 	if len(expire) > 0 && expire[0] > 0 {
 		_expire = expire[0]
 	}
 	token := time.Now().Unix()
-	return token, redi6.Setnxpx(LockKey(key), token, _expire)
+	c, e := redis.String(redi6.Set(LockKey(key), token, "PX", _expire, "NX"))
+	if e == nil {
+		if c == "OK" {
+			return token, nil
+		}
+	}
+	return 0, RedisSetNxError
 }
 
 // Unlock will unlock a key of redis atomicly

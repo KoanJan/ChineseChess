@@ -16,7 +16,14 @@ func init() {
 
 		Dial: func() (redis.Conn, error) {
 
-			return redis.Dial("tcp", conf.AppConf.Redis.Address)
+			c, err := redis.Dial("tcp", conf.AppConf.Redis.Address)
+			if err != nil {
+				return nil, err
+			}
+			if _, err = c.Do("SELECT", conf.AppConf.Redis.Select); err != nil {
+				return nil, err
+			}
+			return c, nil
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 

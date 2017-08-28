@@ -27,6 +27,7 @@ type mongoConf struct {
 // redis配置
 type redisConf struct {
 	Address string `yaml:"address"` // 地址
+	Select  int    `yaml:"select"`  // 数据库
 }
 
 // 日志配置
