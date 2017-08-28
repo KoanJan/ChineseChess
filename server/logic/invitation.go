@@ -1,9 +1,11 @@
 package logic
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"gopkg.in/mgo.v2/bson"
 
 	"ChineseChess/server/cache"
@@ -11,148 +13,233 @@ import (
 	"ChineseChess/server/logger"
 	"ChineseChess/server/models"
 	modelCache "ChineseChess/server/models/cache"
+	"ChineseChess/server/routers/ws/msg"
 )
 
 var (
-	invitees map[string]chan string = make(map[string]chan string) // 受邀者
-	invitors map[string]chan bool   = make(map[string]chan bool)   // 邀请者
+	invitationMsgs map[string]*InvitationMsg          = make(map[string]*InvitationMsg)          // 维护所有邀请函状态
+	inviteeBoxes   map[string]chan *InvitationMsg     = make(map[string]chan *InvitationMsg)     // 受邀者
+	invitorBoxes   map[string]chan *InvitationMsgResp = make(map[string]chan *InvitationMsgResp) // 邀请者
 )
 
-// 消费邀请类型
-type InvitationReplyOp = bool
+// 邀请函简要
+type InvitationMsg struct {
+	InvitationID string `json:"invitation_id"` // 邀请函id
+	Invitor      string `json:"invitor"`       // 邀请者
+	Invitee      string `json:"invitee"`       // 受邀者
+}
 
-const (
-	InvitationReplyOpAccept InvitationReplyOp = true  // 接受
-	InvitationReplyOpReject InvitationReplyOp = false // 拒绝
-)
+// 转化成Model
+func (this *InvitationMsg) AsModel() *models.Invitation {
+	invitation := new(models.Invitation)
+	invitation.ID = bson.ObjectIdHex(this.InvitationID)
+	invitation.Invitor = bson.ObjectIdHex(this.Invitor)
+	invitation.Invitee = bson.ObjectIdHex(this.Invitee)
+	return invitation
+}
 
-// InvitationForm contains invitor and invitee of an invitation
+// 邀请函回复
+type InvitationMsgResp struct {
+	InvitationID string `json:"invitation_id"` // 邀请函id
+	Accept       bool   `json:"accept"`        // 接受
+}
+
+// 邀请表单
 type InvitationForm struct {
 	Invitor string `json:"invitor"` // 邀请者
 	Invitee string `json:"invitee"` // 受邀者
 }
 
-// InvitationResp contains all info including 'op' of an invitaion
-type InvitationResp struct {
-	Invitor string            `json:"invitor"` // 邀请者
-	Invitee string            `json:"invitee"` // 受邀者
-	Op      InvitationReplyOp `json:"op"`      // 对邀请的回复
+// 撤销邀请的表单
+type InvitationCancelForm struct {
+	InvitationID string `json:"invitation_id"` // 邀请函id
 }
 
-// TODO fix parameters and unmarshal the msg
-// Invite invites a user to play game
-func Invite(invitor, invitee string) (*models.ChessBoard, error) {
+// 邀请结果
+type InvitationResult struct {
+	Board *models.ChessBoard `json:"board"`
+	Error string             `json:"error"`
+}
+
+// 发出邀请
+func Invite(gameMsg *msg.GameMsg, invitor string) {
+
+	form := new(InvitationForm)
+	data, err := proto.Marshal(gameMsg)
+	if err != nil {
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("数据解析失败"), invitor)
+		return
+	}
+	if err = json.Unmarshal(data, form); err != nil {
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("数据解析失败"), invitor)
+		return
+	}
 
 	// 判断受邀者状态
-	session, err := modelCache.FindSession(invitee)
+	session, err := modelCache.FindSession(form.Invitee)
 	if err != nil {
-		return nil, errors.New("对方不在线")
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("对方不在线"), invitor)
+		return
 	}
 	if session.Status != modelCache.SessionStatusOK {
-		return nil, errors.New("对方拒绝邀请")
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("对方拒绝邀请"), invitor)
+		return
 	}
 
-	if bson.IsObjectIdHex(invitor) && bson.IsObjectIdHex(invitee) {
+	if bson.IsObjectIdHex(invitor) && bson.IsObjectIdHex(form.Invitee) {
 
-		invitation := models.NewInvitation(bson.ObjectIdHex(invitor), bson.ObjectIdHex(invitee))
-		if err := daf.Insert(invitation); err != nil {
-			return nil, err
-		}
+		// 暂存邀请函
+		invitationMsg := &InvitationMsg{bson.NewObjectId().Hex(), invitor, form.Invitee}
+		invitationMsgs[invitationMsg.InvitationID] = invitationMsg
 
 		// 通知受邀者
 		timeout := make(chan bool)
-		go func() { invitees[invitee] <- invitor }()
+		go func() {
+			if box, ok := inviteeBoxes[form.Invitee]; ok {
+				box <- invitationMsg
+			}
+		}()
 		go func() { time.Sleep(30 * time.Second); timeout <- true }()
 		select {
-		case res := <-invitors[invitor]:
+		case msg := <-invitorBoxes[invitor]:
 
 			close(timeout)
 
 			// 对方回应(理论上邀请者每个等待回复期间只邀请了一个玩家)
-			if res {
+			if msg.Accept {
+
+				// 自己已经取消邀请
+				if _, ok := invitationMsgs[invitationMsg.InvitationID]; !ok {
+					return
+				}
 
 				// 对方接受邀请
-				board := models.NewChessBoard(invitor, invitee)
+				board := models.NewChessBoard(invitor, form.Invitee)
 				if err := daf.Insert(board); err != nil {
-					return nil, errors.New("服务器出错")
+					PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("服务器出错"), invitor, form.Invitee)
+					return
 				}
 				if err := cache.AddBoardCache(board); err != nil {
-					return nil, errors.New("服务器出错")
+					PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("服务器出错"), invitor, form.Invitee)
+					return
 				}
+				invitaion := invitationMsg.AsModel()
+				invitaion.ChessBoardID = board.ID.Hex()
+				if err := daf.Insert(invitaion); err != nil {
+					PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("服务器出错"), invitor, form.Invitee)
+					return
+				}
+
 				// (理论上此处不会并发竞争)
 				if err := modelCache.UpdateSession(invitor, modelCache.SessionFieldStatus, modelCache.SessionStatusGame); err != nil {
 					logger.Warn(err)
 				}
-				return board, nil
+				data, _ := json.Marshal(board)
+				PushGameServerMsg(GameLogicFuncInvite, data, nil, invitor, form.Invitee)
+				return
 			}
-			return nil, errors.New("对方拒绝邀请")
+			PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("对方拒绝邀请"), invitor)
+			return
 		case <-timeout:
 
 			// 邀请超时
 			close(timeout)
-			return nil, errors.New("对方未接受")
+			delete(invitationMsgs, invitationMsg.InvitationID)
+			PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("对方未接受"), invitor)
+			return
 		}
-
-		return nil, nil
 	}
-	return nil, errors.New("数据不合法")
+	PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("数据不合法"), invitor)
+	return
 }
 
-// TODO fix
-// ReplyInvitation will reply an invitation, either accepting or rejection
-func ReplyInvitation(invitor, invitee string, op InvitationReplyOp) (*models.ChessBoard, error) {
+// 回复邀请
+func ReplyInvitation(gameMsg *msg.GameMsg, invitee string) {
 
-	if op == InvitationReplyOpReject {
-
-		// 拒绝
-		session, err := modelCache.FindSession(invitor)
-
-		// 邀请者正在等待回复
-		// TODO 并发安全处理
-		if err == nil && session.Status == modelCache.SessionStatusOK {
-			invitors[invitor] <- false
-		}
-		return nil, errors.New("已拒绝")
+	resp := new(InvitationMsgResp)
+	data, err := proto.Marshal(gameMsg)
+	if err != nil {
+		PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("数据解析失败"), invitee)
+		return
+	}
+	if err = json.Unmarshal(data, resp); err != nil {
+		PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("数据解析失败"), invitee)
+		return
 	}
 
-	session, err := modelCache.FindSession(invitor)
-	if err != nil || session.Status != modelCache.SessionStatusOK {
-		return nil, errors.New("邀请已过期")
+	invitaion, ok := invitationMsgs[resp.InvitationID]
+	if !ok {
+		PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("邀请已取消"), invitee)
+		return
 	}
-	invitors[invitor] <- true
-	return nil, nil
+
+	// 检查邀请者是否在线
+	session, err := modelCache.FindSession(invitaion.Invitor)
+
+	if err != nil {
+
+		// 邀请者不在线
+		PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("对方不在线"), invitee)
+		return
+	}
+
+	if session.Status != modelCache.SessionStatusOK {
+
+		// 邀请者正忙
+		PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("对方忙"), invitee)
+		return
+	}
+
+	if box, ok := invitorBoxes[invitaion.InvitationID]; ok {
+
+		box <- resp
+		return
+	}
+
+	PushGameServerMsg(GameLogicFuncReplyInvitation, []byte{}, errors.New("对方不在线"), invitee)
 }
 
-// JoinInvitees helps a user joining the invitees
-func JoinInvitees(userID string) {
-	if _, ok := invitees[userID]; ok {
-		close(invitees[userID])
-		delete(invitees, userID)
+// 取消邀请
+func CancelInvitation(gameMsg *msg.GameMsg, invitor string) {
+
+	form := new(InvitationCancelForm)
+	data, err := proto.Marshal(gameMsg)
+	if err != nil {
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("数据解析失败"), invitor)
+		return
 	}
-	invitees[userID] = make(chan string)
+	if err = json.Unmarshal(data, form); err != nil {
+		PushGameServerMsg(GameLogicFuncInvite, []byte{}, errors.New("数据解析失败"), invitor)
+		return
+	}
+
+	delete(invitationMsgs, form.InvitationID)
 }
 
-// ExitInvitees helps a user to exit the invitees
-func ExitInvitees(userID string) {
-	if _, ok := invitees[userID]; ok {
-		close(invitees[userID])
-		delete(invitees, userID)
-	}
+// AddUserIntoInvitationSystem adds a new user into invitation system
+func AddUserIntoInvitationSystem(userID string) {
+
+	DeleteUserFromInvitationSystem(userID)
+
+	// invitee
+	inviteeBoxes[userID] = make(chan *InvitationMsg)
+
+	// invitor
+	invitorBoxes[userID] = make(chan *InvitationMsgResp)
 }
 
-// JoinInvitors helps a user joining the invitors
-func JoinInvitors(userID string) {
-	if _, ok := invitors[userID]; ok {
-		close(invitors[userID])
-		delete(invitors, userID)
-	}
-	invitors[userID] = make(chan bool)
-}
+// DeleteUserFromInvitationSystem delete a user from invitation system
+func DeleteUserFromInvitationSystem(userID string) {
 
-// ExitInvitors helps a user to exit the invitors
-func ExitInvitors(userID string) {
-	if _, ok := invitors[userID]; ok {
-		close(invitors[userID])
-		delete(invitors, userID)
+	// invitee
+	if _, ok := inviteeBoxes[userID]; ok {
+		close(inviteeBoxes[userID])
+		delete(inviteeBoxes, userID)
+	}
+
+	// invitor
+	if _, ok := invitorBoxes[userID]; ok {
+		close(invitorBoxes[userID])
+		delete(invitorBoxes, userID)
 	}
 }

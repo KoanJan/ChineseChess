@@ -50,13 +50,13 @@ func handleQueue() {
 }
 
 // 匹配
-func Match(gameMsg *msg.GameMsg, uid ...string) {
+func Match(gameMsg *msg.GameMsg, uid string) {
 
-	matchResults[uid[0]] = make(chan *matchResult, 1)
-	matchingQueue <- uid[0]
-	r := <-matchResults[uid[0]]
-	close(matchResults[uid[0]])
-	delete(matchResults, uid[0])
+	matchResults[uid] = make(chan *matchResult, 1)
+	matchingQueue <- uid
+	r := <-matchResults[uid]
+	close(matchResults[uid])
+	delete(matchResults, uid)
 	var (
 		data []byte = []byte{}
 		err  error  = nil
@@ -66,5 +66,5 @@ func Match(gameMsg *msg.GameMsg, uid ...string) {
 		data, err = json.Marshal(r.board)
 	}
 	// send game server msg
-	PushGameServerMsg(gameMsg.Call, data, err, uid[0])
+	PushGameServerMsg(gameMsg.Call, data, err, uid)
 }

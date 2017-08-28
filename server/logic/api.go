@@ -8,8 +8,11 @@ import (
 )
 
 const (
-	GameLogicFuncPlay  = "play"  // 下子
-	GameLogicFuncMatch = "match" // 匹配
+	GameLogicFuncPlay             = "play"              // 下子
+	GameLogicFuncMatch            = "match"             // 匹配
+	GameLogicFuncInvite           = "invite"            // 邀请
+	GameLogicFuncReplyInvitation  = "reply_invitation"  // 回复邀请
+	GameLogicFuncCancelInvitation = "cancel_invitation" // 取消邀请
 )
 
 var msgBox chan *msg.GameServerMsg = make(chan *msg.GameServerMsg, 1024) // 消息推送
@@ -41,16 +44,22 @@ func HandleGameServerMsg(handler func(*msg.GameServerMsg)) {
 	}
 }
 
-var api map[string]func(*msg.GameMsg, ...string) = map[string]func(*msg.GameMsg, ...string){
+var api map[string]func(*msg.GameMsg, string) = map[string]func(*msg.GameMsg, string){
 
 	GameLogicFuncPlay: Play,
 
 	GameLogicFuncMatch: Match,
+
+	GameLogicFuncInvite: Invite,
+
+	GameLogicFuncReplyInvitation: ReplyInvitation,
+
+	GameLogicFuncCancelInvitation: CancelInvitation,
 }
 
 // GameLogicFunc returns a logic func if exists,
 // or else a func that always returns a error says that the function doesn't exist.
-func GameLogicFunc(funcName string) func(gameMsg *msg.GameMsg, uid ...string) {
+func GameLogicFunc(funcName string) func(gameMsg *msg.GameMsg, uid string) {
 
 	if f, existed := api[funcName]; existed {
 		return f
@@ -58,10 +67,10 @@ func GameLogicFunc(funcName string) func(gameMsg *msg.GameMsg, uid ...string) {
 	return noSuchFunc(funcName)
 }
 
-func noSuchFunc(funcName string) func(*msg.GameMsg, ...string) {
+func noSuchFunc(funcName string) func(*msg.GameMsg, string) {
 
-	return func(gameMsg *msg.GameMsg, uid ...string) {
+	return func(gameMsg *msg.GameMsg, uid string) {
 
-		PushGameServerMsg(gameMsg.Call, []byte{}, errors.New(fmt.Sprintf("no such func called '%s'", string(funcName))), uid[0])
+		PushGameServerMsg(gameMsg.Call, []byte{}, errors.New(fmt.Sprintf("no such func called '%s'", string(funcName))), uid)
 	}
 }

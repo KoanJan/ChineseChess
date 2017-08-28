@@ -33,12 +33,12 @@ type PlayResp struct {
 }
 
 // Play 下子
-func Play(gameMsg *msg.GameMsg, uid ...string) {
+func Play(gameMsg *msg.GameMsg, uid string) {
 
 	form := new(PlayForm)
 	if err := json.Unmarshal(gameMsg.Data, form); err != nil {
 
-		PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("数据解析失败!"), uid...)
+		PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("数据解析失败!"), uid)
 		return
 	}
 
@@ -53,7 +53,7 @@ func Play(gameMsg *msg.GameMsg, uid ...string) {
 			return errors.New("你穿越了")
 		}
 
-		if !AllowedUnderRules(form.X1, form.Y1, form.X2, form.Y2, board, uid[0]) {
+		if !AllowedUnderRules(form.X1, form.Y1, form.X2, form.Y2, board, uid) {
 			return errors.New("不符合游戏规则")
 		}
 
@@ -67,9 +67,9 @@ func Play(gameMsg *msg.GameMsg, uid ...string) {
 		if cacheV2 == models.PieceJiang || cacheV2 == models.PieceShuai {
 
 			// 吃将
-			winnerID := bson.ObjectIdHex(uid[0])
+			winnerID := bson.ObjectIdHex(uid)
 			board.WinnerID = &winnerID
-		} else if IsInDanger(board, uid[0]) {
+		} else if IsInDanger(board, uid) {
 
 			// 如果走完这步会被吃将,则撤销本次操作
 			board.Set(form.X1, form.Y1, cacheV1)
@@ -88,16 +88,16 @@ func Play(gameMsg *msg.GameMsg, uid ...string) {
 		return nil
 	}); err != nil {
 
-		PushGameServerMsg(GameLogicFuncPlay, []byte{}, err, uid...)
+		PushGameServerMsg(GameLogicFuncPlay, []byte{}, err, uid)
 		return
 	} else {
 		resp := &PlayResp{form.X1, form.Y1, form.X2, form.Y2, form.Step}
 		respData, e := json.Marshal(resp)
 		if e != nil {
-			PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("操作成功, 同步棋局失败"), uid...)
+			PushGameServerMsg(GameLogicFuncPlay, []byte{}, errors.New("操作成功, 同步棋局失败"), uid)
 			return
 		}
-		PushGameServerMsg(GameLogicFuncPlay, respData, nil, uid...)
+		PushGameServerMsg(GameLogicFuncPlay, respData, nil, uid)
 		return
 	}
 }
