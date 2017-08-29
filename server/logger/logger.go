@@ -2,7 +2,6 @@ package logger
 
 import (
 	"io"
-	"os"
 
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
@@ -87,24 +86,17 @@ func WithError(err error) *logrus.Entry {
 	return logger.WithError(err)
 }
 
-var Writer io.WriteCloser
+var LogFileWriter io.WriteCloser
 
 func init() {
 
-	var err error
-	if err = os.MkdirAll(conf.AppConf.Logger.Path, os.ModePerm); err != nil {
-		panic(err)
-	}
-	Writer, err = os.OpenFile(conf.AppConf.Logger.FilePath(), os.O_CREATE, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
+	LogFileWriter = NewLogFileWriter(conf.AppConf.Logger.FilePath())
 
 	logger = logrus.New()
 	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Hooks.Add(lfshook.NewHook(lfshook.PathMap{
-		logrus.InfoLevel:  conf.AppConf.Logger.FilePath(),
-		logrus.ErrorLevel: conf.AppConf.Logger.FilePath(),
+	logger.Hooks.Add(lfshook.NewHook(lfshook.WriterMap{
+		logrus.InfoLevel:  LogFileWriter,
+		logrus.ErrorLevel: LogFileWriter,
 	}))
 
 }
