@@ -8,6 +8,7 @@ import (
 func Do(commandName string, args ...interface{}) (interface{}, error) {
 
 	conn := pool.Get()
+	defer conn.Close()
 	return conn.Do(commandName, args...)
 }
 
