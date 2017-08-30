@@ -3,7 +3,6 @@ package logger
 import (
 	"io"
 
-	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 
 	"ChineseChess/server/conf"
@@ -94,9 +93,6 @@ func init() {
 
 	logger = logrus.New()
 	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Hooks.Add(lfshook.NewHook(lfshook.WriterMap{
-		logrus.InfoLevel:  LogFileWriter,
-		logrus.ErrorLevel: LogFileWriter,
-	}))
-
+	logger.SetLevel(logrus.DebugLevel)
+	logger.Out = LogFileWriter
 }

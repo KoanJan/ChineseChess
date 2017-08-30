@@ -22,7 +22,7 @@ func NewLogFileWriter(filename string) io.WriteCloser {
 		filename, _ = filepath.Abs(filename)
 	}
 
-	idx := strings.LastIndex(filename, "/")
+	idx := strings.LastIndexByte(filename, filepath.Separator)
 	filenameBytes := []byte(filename)
 
 	dir := string(filenameBytes[0:idx])   // 目录
