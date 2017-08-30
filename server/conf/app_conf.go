@@ -2,6 +2,8 @@ package conf
 
 import (
 	"io/ioutil"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,16 +34,17 @@ type redisConf struct {
 
 // 日志配置
 type loggerConf struct {
-	Path string `yaml:"path"` // 日志文件所在目录
+	Dir string `yaml:"dir"` // 日志文件所在目录
 }
 
 // 获取日志路径
 func (this *loggerConf) FilePath() string {
-	pth := this.Path
-	if !strings.HasSuffix(pth, "/") {
-		pth = pth + "/"
+	d := this.Dir
+	separator := strconv.QuoteRune(filepath.Separator)
+	if !strings.HasSuffix(d, separator) {
+		d = d + separator
 	}
-	return pth + time.Now().Format("2006-01-02") + ".log"
+	return d + time.Now().Format("2006-01-02") + ".log"
 }
 
 var AppConf *appConf = new(appConf)
@@ -51,6 +54,7 @@ func init() {
 
 	initFlag()
 
+	// 读取配置文件
 	var confPath string = "./server/conf/app_conf.yml"
 	if _confPath, ok := FlagArgs(FlagConfFilePath); ok {
 		confPath = _confPath
@@ -61,5 +65,10 @@ func init() {
 	}
 	if err = yaml.Unmarshal(data, AppConf); err != nil {
 		panic(err)
+	}
+
+	// 读取日志配置
+	if _logDir, ok := FlagArgs(FlagLogFileDir); ok {
+		AppConf.Logger.Dir = _logDir
 	}
 }

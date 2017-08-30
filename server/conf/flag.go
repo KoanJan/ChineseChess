@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	FlagConfFilePath = "conf_path" // 配置文件路径
+	FlagConfFilePath = "conf_path"    // 配置文件路径
+	FlagLogFileDir   = "log_file_dir" // 日志文件所在目录
 )
 
 var args map[string]string
