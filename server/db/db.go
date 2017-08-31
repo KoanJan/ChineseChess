@@ -17,5 +17,5 @@ func Do(collectionName string, f func(*mgo.Collection)) {
 		panic(err)
 	}
 	c.check()
-	f(c.sess.DB(conf.AppConf.Mongo.DBName).C(collectionName))
+	f(c.sess.DB(*conf.AppConf.Mongodb.DBName).C(collectionName))
 }

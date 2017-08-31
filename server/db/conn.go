@@ -7,8 +7,6 @@ import (
 	_ "ChineseChess/server/conf"
 )
 
-var uri string = conf.AppConf.Mongo.Host + ":" + conf.AppConf.Mongo.Port
-
 // 连接
 type conn struct {
 	sess *mgo.Session
@@ -27,7 +25,7 @@ func (c *conn) release() {
 func (c *conn) check() {
 	if c.sess.Ping() != nil {
 		var err error
-		if c.sess, err = mgo.Dial(uri); err != nil {
+		if c.sess, err = mgo.Dial(*conf.AppConf.Mongodb.URL); err != nil {
 			panic(err)
 		}
 	}

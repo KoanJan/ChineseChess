@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2"
+
+	"ChineseChess/server/conf"
 )
 
 const (
@@ -32,7 +34,7 @@ func newPool() *pool {
 	p := new(pool)
 	p.conns = make([]*conn, poolSize)
 
-	sess, err := mgo.Dial(uri)
+	sess, err := mgo.Dial(*conf.AppConf.Mongodb.URL)
 	defer sess.Close()
 	sess.SetSocketTimeout(timeout * time.Second)
 	if err != nil {

@@ -16,11 +16,11 @@ func init() {
 
 		Dial: func() (redis.Conn, error) {
 
-			c, err := redis.Dial("tcp", conf.AppConf.Redis.Address)
+			c, err := redis.Dial("tcp", *conf.AppConf.Redis.Address)
 			if err != nil {
 				return nil, err
 			}
-			if _, err = c.Do("SELECT", conf.AppConf.Redis.Select); err != nil {
+			if _, err = c.Do("SELECT", *conf.AppConf.Redis.Select); err != nil {
 				return nil, err
 			}
 			return c, nil
