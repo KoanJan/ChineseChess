@@ -10,7 +10,7 @@ import (
 
 // Insert can insert a model into db
 func Insert(model models.Model) (err error) {
-	db.Do(model.CollectionName(), func(c *mgo.Collection) {
+	db.Do(model.CN(), func(c *mgo.Collection) {
 		err = c.Insert(model)
 	})
 	return
@@ -18,7 +18,7 @@ func Insert(model models.Model) (err error) {
 
 // Update can update a model
 func Update(model models.Model) (err error) {
-	db.Do(model.CollectionName(), func(c *mgo.Collection) {
+	db.Do(model.CN(), func(c *mgo.Collection) {
 		err = c.UpdateId(model.GetID(), model)
 	})
 	return
@@ -26,7 +26,7 @@ func Update(model models.Model) (err error) {
 
 // Delete can delete a model
 func Delete(model models.Model) (err error) {
-	db.Do(model.CollectionName(), func(c *mgo.Collection) {
+	db.Do(model.CN(), func(c *mgo.Collection) {
 		err = c.RemoveId(model.GetID())
 	})
 	return
@@ -34,8 +34,16 @@ func Delete(model models.Model) (err error) {
 
 // Find can find a model.
 func FindOne(model models.Model, m bson.M) (err error) {
-	db.Do(model.CollectionName(), func(c *mgo.Collection) {
+	db.Do(model.CN(), func(c *mgo.Collection) {
 		err = c.Find(m).One(model)
 	})
 	return
+}
+
+// UpdateM updates many records with 'selector' and 'update' typed 'bson.M'.
+func UpdateM(cn string, selector, update bson.M) (err error) {
+	db.Do(cn, func(c *mgo.Collection) {
+		_, err = c.UpdateAll(selector, update)
+	})
+	return err
 }

@@ -56,12 +56,16 @@ type ChessBoard struct {
 
 }
 
-func (this *ChessBoard) CollectionName() string {
-	return "chess_board"
+func (this *ChessBoard) CN() string {
+	return ChessBoardCN()
 }
 
 func (this *ChessBoard) GetID() bson.ObjectId {
 	return this.ID
+}
+
+func ChessBoardCN() string {
+	return "chess_board"
 }
 
 /*

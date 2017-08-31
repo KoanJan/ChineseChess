@@ -16,12 +16,16 @@ type Invitation struct {
 	UpdatedAt    time.Time     `bson:"updated_at" json:"updated_at"`         // 修改时间
 }
 
-func (this *Invitation) CollectionName() string {
-	return "invitation"
+func (this *Invitation) CN() string {
+	return InvitationCN()
 }
 
 func (this *Invitation) GetID() bson.ObjectId {
 	return this.ID
+}
+
+func InvitationCN() string {
+	return "invitation"
 }
 
 /*

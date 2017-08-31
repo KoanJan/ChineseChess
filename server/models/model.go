@@ -6,6 +6,6 @@ import (
 
 // 模型接口
 type Model interface {
-	CollectionName() string
-	GetID() bson.ObjectId
+	CN() string           // collection name
+	GetID() bson.ObjectId // ID
 }

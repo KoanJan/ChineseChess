@@ -16,12 +16,16 @@ type User struct {
 	UpdatedAt time.Time     `bson:"updated_at" json:"updated_at"` // 修改时间
 }
 
-func (this *User) CollectionName() string {
-	return "users"
+func (this *User) CN() string {
+	return UserCN()
 }
 
 func (this *User) GetID() bson.ObjectId {
 	return this.ID
+}
+
+func UserCN() string {
+	return "users"
 }
 
 // NewUser returns a new user
