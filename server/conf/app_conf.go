@@ -1,9 +1,10 @@
 package conf
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -40,9 +41,8 @@ type loggerConf struct {
 // 获取日志路径
 func (this *loggerConf) FilePath() string {
 	d := this.Dir
-	separator := strconv.QuoteRune(filepath.Separator)
-	if !strings.HasSuffix(d, separator) {
-		d = d + separator
+	if !strings.HasSuffix(d, "/") {
+		d = d + "/"
 	}
 	return d + time.Now().Format("2006-01-02") + ".log"
 }
@@ -52,13 +52,19 @@ var AppConf *appConf = new(appConf)
 // 初始化配置
 func init() {
 
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			time.Sleep(5 * time.Second)
+			os.Exit(1)
+		}
+	}()
+
+	// 读取终端参数列表
 	initFlag()
 
 	// 读取配置文件
-	var confPath string = "./server/conf/app_conf.yml"
-	if _confPath, ok := FlagArgs(FlagConfFilePath); ok {
-		confPath = _confPath
-	}
+	confPath, _ := filepath.Abs("conf/app_conf.yml")
 	data, err := ioutil.ReadFile(confPath)
 	if err != nil {
 		panic(err)
@@ -68,7 +74,7 @@ func init() {
 	}
 
 	// 读取日志配置
-	if _logDir, ok := FlagArgs(FlagLogFileDir); ok {
-		AppConf.Logger.Dir = _logDir
+	if v := FlagValue(FN_LogFileDir); v != nil {
+		AppConf.Logger.Dir = v.String()
 	}
 }

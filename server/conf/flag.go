@@ -1,31 +1,25 @@
 package conf
 
 import (
-	"os"
-	"strings"
+	"flag"
 )
+
+type FlagName string
 
 const (
-	FlagConfFilePath = "conf_path"    // 配置文件路径
-	FlagLogFileDir   = "log_file_dir" // 日志文件所在目录
+	FN_LogFileDir FlagName = "log_file_dir"
 )
 
-var args map[string]string
-
+// 初始化终端参数
 func initFlag() {
-
-	args = make(map[string]string)
-
-	for _, arg := range os.Args {
-		if strings.Contains(arg, "=") {
-			kv := strings.Split(arg, "=")
-			args[kv[0]] = kv[1]
-		}
-	}
+	flag.String(string(FN_LogFileDir), "", "[optional]日志文件所在目录[-log_file_dir=<your_log_file_directory>]")
+	flag.Parse()
 }
 
-// 获取命令行参数
-func FlagArgs(key string) (string, bool) {
-	v, ok := args[key]
-	return v, ok
+// 获取终端参数
+func FlagValue(name FlagName) flag.Value {
+	if f := flag.CommandLine.Lookup(string(name)); f != nil {
+		return f.Value
+	}
+	return nil
 }
