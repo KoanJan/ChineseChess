@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -38,16 +39,16 @@ const (
 	ChessBoardStatusEnded   // 结束
 )
 
-/*
-棋盘
-*/
+// 棋盘
 type ChessBoard struct {
-	Common
-	Steps       []Step         `bson:"steps",json:"steps"`                        // 走子历史
-	RedUserID   bson.ObjectId  `bson:"red_user_id",json:"red_user_id,string"`     // 红方用户ID
-	BlackUserID bson.ObjectId  `bson:"black_user_id",json:"black_user_id,string"` // 黑方用户ID
-	WinnerID    *bson.ObjectId `bson:"winner_id",json:"winner_id,string"`         // 获胜方用户ID(如果是和局则该局无值)
-	Status      int32          `bson:"status",json:"status"`                      // 棋局状态
+	ID          bson.ObjectId  `bson:"_id" json:"id,string"`                      // ID
+	Steps       []Step         `bson:"steps" json:"steps"`                        // 走子历史
+	RedUserID   bson.ObjectId  `bson:"red_user_id" json:"red_user_id,string"`     // 红方用户ID
+	BlackUserID bson.ObjectId  `bson:"black_user_id" json:"black_user_id,string"` // 黑方用户ID
+	WinnerID    *bson.ObjectId `bson:"winner_id" json:"winner_id,string"`         // 获胜方用户ID(如果是和局则该局无值)
+	Status      int32          `bson:"status" json:"status"`                      // 棋局状态
+	CreatedAt   time.Time      `bson:"created_at" json:"created_at"`              // 创建时间
+	UpdatedAt   time.Time      `bson:"updated_at" json:"updated_at"`              // 修改时间
 
 	Others []string `bson:"-",json:"-"` // 观战者
 
@@ -57,6 +58,10 @@ type ChessBoard struct {
 
 func (this *ChessBoard) CollectionName() string {
 	return "chess_board"
+}
+
+func (this *ChessBoard) GetID() bson.ObjectId {
+	return this.ID
 }
 
 /*

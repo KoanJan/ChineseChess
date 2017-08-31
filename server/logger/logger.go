@@ -92,7 +92,7 @@ func init() {
 	LogFileWriter = NewLogFileWriter(conf.AppConf.Logger.FilePath())
 
 	logger = logrus.New()
-	logger.Formatter = &logrus.JSONFormatter{}
+	logger.Formatter = &logrus.TextFormatter{}
 	logger.SetLevel(logrus.DebugLevel)
 	logger.Out = LogFileWriter
 }

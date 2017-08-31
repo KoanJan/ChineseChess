@@ -22,15 +22,15 @@ type loginForm struct {
 // Login function will be called while user logining
 func Login(c *gin.Context) {
 
-	logger.Debug("oil login")
-
 	form := new(loginForm)
 	if err := c.BindJSON(form); err != nil {
+		logger.Error(err)
 		RenderErr(c, err, 400)
 		return
 	}
 	user := new(models.User)
 	if err := daf.FindOne(user, bson.M{"username": form.Username, "password": form.Password}); err != nil {
+		logger.Error(err)
 		RenderErr(c, err)
 		return
 	}
@@ -40,7 +40,7 @@ func Login(c *gin.Context) {
 	}
 	token, err := middlewares.GenerateToken(user.ID.Hex())
 	if err != nil {
-		c.Error(err)
+		logger.Error(err)
 		RenderErr(c, errors.New("登陆失败"))
 		return
 	}
@@ -48,10 +48,13 @@ func Login(c *gin.Context) {
 	//
 	session := cache.NewSession(user.ID.Hex(), user.Nick, cache.SessionStatusOK)
 	if err := session.Save(); err != nil {
+		logger.Error(err)
 		RenderErr(c, err)
 		return
 	}
-	RenderOk(c)
+	RenderOk(c, map[string]interface{}{
+		"details": session,
+	})
 }
 
 // Logout function will be called while user logout

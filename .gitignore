@@ -19,3 +19,5 @@
 /log/
 log/
 server/test/
+/server/log/
+server/server

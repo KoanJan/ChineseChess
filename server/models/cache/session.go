@@ -38,9 +38,9 @@ const SessionExpiry int32 = 7 * 24 * 3600 // 登陆默认保存7天
 
 // Session
 type Session struct {
-	UserID string        `redis:"user_id"` // 用户id
-	Nick   string        `redis:"nick"`    // 用户昵称
-	Status SessionStatus `redis:"status"`  // 用户状态
+	UserID string        `redis:"user_id" json:"user_id"` // 用户id
+	Nick   string        `redis:"nick" json:"nick"`       // 用户昵称
+	Status SessionStatus `redis:"status" json:"-"`        // 用户状态
 }
 
 // Save a session into redis

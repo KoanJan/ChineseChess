@@ -20,6 +20,7 @@ func routeV1(e *gin.Engine) {
 
 	// user
 	group.POST("/user", v1.CreateUser)
+	group.GET("/user/:id", middlewares.Handlers[1], v1.GetUser)
 	group.POST("/session", v1.Login)
 	group.DELETE("/session", middlewares.Handlers[1], v1.Logout)
 
